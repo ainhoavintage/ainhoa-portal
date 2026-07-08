@@ -505,7 +505,7 @@ button.logout:hover { border-color: var(--brown); color: var(--text); }
 // ============================================================
 // CONFIGURACIÓN
 // ============================================================
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzO9Wt0G24aKzAz2dfTTaISk40JLK2HO2KqEOa4NxTKea74rh5_RxhLclyUPA-jRw7f/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwbi9fil242IY8boatJquM2vdQ9SDfIW6NH0u_2CaEUCG0xSlc3roR7H5XQqFkN-U8j/exec';
 // La contraseña de admin ahora vive en la hoja Config del Sheet, no acá.
 // ============================================================
 
@@ -519,7 +519,8 @@ async function api(action, params = {}) {
   const url = new URL(APPS_SCRIPT_URL);
   url.searchParams.set('action', action);
   Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
-  const res = await fetch(url.toString());
+  url.searchParams.set('_t', Date.now());
+  const res = await fetch(url.toString(), { cache: 'no-store' });
   return res.json();
 }
 
@@ -872,65 +873,25 @@ async function cargarPagosPendientes() {
   const lista = document.getElementById('pendientes-list');
   lista.innerHTML = '<div class="loader"><div class="spinner"></div><p>Calculando saldos...</p></div>';
   try {
-    const [provR, ingR, venR, pagR] = await Promise.all([
-      api('getSheet', { sheet: 'BD_Prov' }),
-      api('getSheet', { sheet: 'Ingresos' }),
-      api('getSheet', { sheet: 'Ventas' }),
-      api('getSheet', { sheet: 'Liquidaciones' })
-    ]);
-    const provRows = provR.rows || [];
-    const ingresos = ingR.rows || [];
-    const ventas = venR.rows || [];
-    const pagos = pagR.rows || [];
-
-    const vendidosCod = new Set(ventas.map(r => String(r['Código']||r['Codigo']||'').trim().toLowerCase()));
-
-    const resultados = provRows.map(provRow => {
-      const num = parseInt(provRow[Object.keys(provRow)[0]]);
-      const nombre = provRow['Proveedor'] || provRow[Object.keys(provRow)[1]] || '';
-      if (!num) return null;
-
-      const misIngresos = ingresos.filter(r => {
-        const cod = String(r['Código Unico'] || r['Codigo Unico'] || r['Código Único'] || '');
-        const m = cod.match(/^(\d+)-/);
-        return m && parseInt(m[1]) === num;
-      });
-      const vendidas = misIngresos.filter(r => {
-        const cod = String(r['Código Unico'] || r['Codigo Unico'] || r['Código Único'] || '').trim();
-        return vendidosCod.has(cod.toLowerCase());
-      });
-      const totalGanancia = vendidas.reduce((s,r) => {
-        const comision = r['Comisión Ainhoa'] || r['Comision Ainhoa'] || 0;
-        return s + (comision ? (parseFloat(r['Ganancia proveedor'])||0) : 0);
-      }, 0);
-
-      const misPagos = pagos.filter(p => parseInt(p['Nro Prov']) === num);
-      const totalCobrado = misPagos.reduce((s,p) => s + (parseFloat(p['Importe'])||0), 0);
-      const pendiente = totalGanancia - totalCobrado;
-
-      return { num, nombre, totalGanancia, totalCobrado, pendiente, vendidasCount: vendidas.length };
-    }).filter(r => r && r.pendiente > 0);
-
-    resultados.sort((a,b) => b.pendiente - a.pendiente);
+    const res = await api('getLiquidacionesPendientes', {});
+    const resultados = (res.proveedoras || []).filter(r => r.total > 0);
 
     if (!resultados.length) {
       lista.innerHTML = '<div class="empty-state">No hay saldos pendientes</div>';
       return;
     }
 
-    const totalGeneral = resultados.reduce((s,r) => s + r.pendiente, 0);
-
     lista.innerHTML = `
-      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">${resultados.length} proveedoras con saldo · Total adeudado: <strong style="color:var(--brown);">${fmt(totalGeneral)}</strong></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">${resultados.length} proveedoras con saldo · Total adeudado: <strong style="color:var(--brown);">${fmt(res.totalGeneral)}</strong></div>
     ` + resultados.map(r => `
       <div class="prenda-item" style="margin-bottom:8px;">
         <div>
-          <div class="prenda-cod">#${r.num}</div>
-          <div class="prenda-desc">${r.nombre}</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:3px;">${r.vendidasCount} prendas vendidas · Cobrado: ${fmt(r.totalCobrado)}</div>
+          <div class="prenda-cod">#${r.nro}</div>
+          <div class="prenda-desc">${r.proveedor}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px;">${r.items} prenda(s) vendida(s) sin liquidar</div>
         </div>
         <div class="prenda-right">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--brown);">${fmt(r.pendiente)}</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--brown);">${fmt(r.total)}</div>
           <div style="font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;">pendiente</div>
         </div>
       </div>
