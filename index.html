@@ -1063,7 +1063,7 @@ function renderDashboard() {
     const m = cod.match(/^(\d+)-/);
     if (!m || parseInt(m[1]) !== num) return false;
     const devuelta = String(r['Devuelta'] || '').trim().toUpperCase();
-    if (devuelta === 'SI' || devuelta === 'SÍ') return false;
+    if (devuelta === 'DEVUELTA') return false;
     return true;
   });
 
