@@ -1057,11 +1057,14 @@ function renderDashboard() {
   const ventas = allData.ventas || [];
   const pagos = allData.pagos || [];
 
-  // Filtrar prendas de esta proveedora
+   // Filtrar prendas de esta proveedora (excluyendo las marcadas como devueltas)
   const misIngresos = ingresos.filter(r => {
     const cod = String(r['Código Unico'] || r['Codigo Unico'] || r['Código Único'] || '');
     const m = cod.match(/^(\d+)-/);
-    return m && parseInt(m[1]) === num;
+    if (!m || parseInt(m[1]) !== num) return false;
+    const devuelta = String(r['Devuelta'] || '').trim().toUpperCase();
+    if (devuelta === 'SI' || devuelta === 'SÍ') return false;
+    return true;
   });
 
   // Vendidas
