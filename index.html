@@ -358,9 +358,10 @@ button.logout:hover { border-color: var(--brown); color: var(--text); }
         <div class="card-value" id="stat-stock">—</div>
       </div>
     </div>
-    <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;">
+       <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;">
       <button class="nav-tab active" style="color:var(--dark);border-bottom:2px solid var(--dark);" onclick="setDashTab('prendas',this)">Mis prendas</button>
       <button class="nav-tab" onclick="setDashTab('cobros',this)">Cobros</button>
+      <button class="nav-tab" onclick="setDashTab('devueltas',this)">Devueltas</button>
     </div>
 
     <div id="dash-tab-prendas">
@@ -376,8 +377,12 @@ button.logout:hover { border-color: var(--brown); color: var(--text); }
       <div class="prendas-list" id="prendas-list"></div>
     </div>
 
-    <div id="dash-tab-cobros" style="display:none;">
+        <div id="dash-tab-cobros" style="display:none;">
       <div class="pagos-list" id="pagos-list"></div>
+    </div>
+
+    <div id="dash-tab-devueltas" style="display:none;">
+      <div class="prendas-list" id="devueltas-list"></div>
     </div>
   </div>
 </div>
@@ -916,6 +921,25 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyZbEeODB-LF71H
 
 let allData = { proveedoras: [], ingresos: [], ventas: [], pagos: [] };
 let prendas = [];
+let prendasDevueltas = [];
+
+function renderDevueltas() {
+  const lista = document.getElementById('devueltas-list');
+  if (!lista) return;
+  if (!prendasDevueltas.length) {
+    lista.innerHTML = '<div class="empty-state">No tenés prendas devueltas.</div>';
+    return;
+  }
+  lista.innerHTML = prendasDevueltas.map(p => `
+    <div class="prenda-item">
+      <div>
+        <div class="prenda-cod">${p.cod}</div>
+        <div class="prenda-desc">${p.desc}${p.talle ? ` · ${p.talle}` : ''}</div>
+        <span class="badge stock" style="margin-top:5px;display:inline-block;">Devuelta</span>
+      </div>
+    </div>
+  `).join('');
+}
 let currentUser = null;
 let filtroActivo = 'todas';
 
@@ -1057,15 +1081,25 @@ function renderDashboard() {
   const ventas = allData.ventas || [];
   const pagos = allData.pagos || [];
 
-   // Filtrar prendas de esta proveedora (excluyendo las marcadas como devueltas)
-  const misIngresos = ingresos.filter(r => {
+   // Todas las filas de esta proveedora, separando las devueltas del resto
+  const todasMisFilas = ingresos.filter(r => {
     const cod = String(r['Código Unico'] || r['Codigo Unico'] || r['Código Único'] || '');
     const m = cod.match(/^(\d+)-/);
-    if (!m || parseInt(m[1]) !== num) return false;
-    const devuelta = String(r['Devuelta'] || '').trim().toUpperCase();
-    if (devuelta === 'DEVUELTA') return false;
-    return true;
+    return m && parseInt(m[1]) === num;
   });
+  const misIngresos = todasMisFilas.filter(r => {
+    const devuelta = String(r['Devuelta'] || '').trim().toUpperCase();
+    return devuelta !== 'DEVUELTA';
+  });
+  prendasDevueltas = todasMisFilas.filter(r => {
+    const devuelta = String(r['Devuelta'] || '').trim().toUpperCase();
+    return devuelta === 'DEVUELTA';
+  }).map(r => ({
+    cod: String(r['Código Unico'] || r['Codigo Unico'] || r['Código Único'] || '').trim(),
+    desc: r['Producto'] || '—',
+    talle: r['Talle'] || ''
+  }));
+  renderDevueltas();
 
   // Vendidas
   const vendidosCod = new Set(
@@ -1154,6 +1188,7 @@ function setDashTab(tab, btn) {
   });
   document.getElementById('dash-tab-prendas').style.display = tab === 'prendas' ? 'block' : 'none';
   document.getElementById('dash-tab-cobros').style.display = tab === 'cobros' ? 'block' : 'none';
+  document.getElementById('dash-tab-devueltas').style.display = tab === 'devueltas' ? 'block' : 'none';
 }
 
 function setFiltro(f, btn) {
