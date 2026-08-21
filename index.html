@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ainhoa Vintage · Portal Proveedoras</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0"><style>
 :root {
   --bg: #faf9f7;
   --bg2: #f3f1ed;
@@ -1087,13 +1089,13 @@ function renderDashboard() {
     const m = cod.match(/^(\d+)-/);
     return m && parseInt(m[1]) === num;
   });
-  const misIngresos = todasMisFilas.filter(r => {
-    const devuelta = String(r['Devuelta'] || '').trim().toUpperCase();
-    return devuelta !== 'DEVUELTA';
+    const misIngresos = todasMisFilas.filter(r => {
+    const estado = String(r['Estado Prenda'] || '').trim().toUpperCase();
+    return estado !== 'DEVUELTA';
   });
   prendasDevueltas = todasMisFilas.filter(r => {
-    const devuelta = String(r['Devuelta'] || '').trim().toUpperCase();
-    return devuelta === 'DEVUELTA';
+    const estado = String(r['Estado Prenda'] || '').trim().toUpperCase();
+    return estado === 'DEVUELTA';
   }).map(r => ({
     cod: String(r['Código Unico'] || r['Codigo Unico'] || r['Código Único'] || '').trim(),
     desc: r['Producto'] || '—',
