@@ -1679,12 +1679,29 @@ async function cargarSobresPendientes() {
         </div>
         <div class="prenda-right">
           <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--brown);">${fmt(s.importe)}</div>
-          <button class="logout" onclick="confirmarEntrega('${s.nroRecibo}')">Confirmar entrega</button>
+          <div style="display:flex;gap:6px;">
+            <button class="logout" onclick="confirmarEntrega('${s.nroRecibo}')">Confirmar entrega</button>
+            <button class="logout" style="color:var(--red);" onclick="cancelarSobre('${s.nroRecibo}')">Eliminar sobre</button>
+          </div>
         </div>
       </div>
     `).join('');
   } catch(e) {
     lista.innerHTML = '<div class="empty-state">Error al cargar sobres</div>';
+  }
+}
+
+async function cancelarSobre(nroRecibo) {
+  if (!confirm(`¿Eliminar el sobre ${nroRecibo}? Se le devuelve la plata a Caja y las prendas vuelven a estar disponibles para armar otro sobre.`)) return;
+  try {
+    const res = await api('cancelarSobre', { nroRecibo });
+    if (res && res.success) {
+      cargarSobresPendientes();
+    } else {
+      alert('No se pudo eliminar: ' + (res && res.error ? res.error : ''));
+    }
+  } catch(e) {
+    alert('Error de conexión: ' + e.message);
   }
 }
 
