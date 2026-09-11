@@ -2676,7 +2676,383 @@ async function marcarCalendarioPagado(id) {
     alert('Error de conexión: ' + e.message);
   }
 }
+/* =====================================================================
+   PARCHE DEL PORTAL — 11/9/2026
+   =====================================================================
 
+   CÓMO INSTALARLO:
+   En el index.html del repo ainhoa-portal, buscá esta línea, que está
+   casi al final de todo:
+
+       // INIT
+
+   Pegá TODO este bloque JUSTO ARRIBA de esa línea. No borres nada.
+
+   Estas funciones tienen el mismo nombre que las de arriba y las
+   reemplazan. Es a propósito: así no hay que tocar el resto del archivo.
+
+   QUÉ ARREGLA:
+
+   1. EL NOMBRE DE LA PROVEEDORA QUE NO APARECÍA
+      La lista de proveedoras se bajaba una sola vez al entrar, y si esa
+      bajada fallaba quedaba vacía sin avisar. Ahora, si el nombre no
+      está, lo va a buscar al servidor en el momento.
+
+   2. EL BOTÓN ACTUALIZAR
+      Ahora avisa mientras trabaja y cuando termina, y vuelve a
+      completar el nombre.
+
+   3. QUE SOLO CUENTE LO VENDIDO
+      Una prenda cuenta como plata a cobrar solo si la columna Condición
+      de Ventas dice "Vendido", o si ya está pagada (eso ya está
+      cerrado). Las reservadas y las que quedaron con la casilla vacía
+      dejan de contar.
+      Si no existe la columna Condición, se comporta como antes.
+   ===================================================================== */
+
+
+// ---------------------------------------------------------------
+// Qué cuenta como vendida
+// ---------------------------------------------------------------
+function setVendidas(ventas) {
+  const s = new Set();
+  if (!ventas || !ventas.length) return s;
+
+  const claves = Object.keys(ventas[0]);
+  const kCond = claves.find(k => k.toLowerCase().indexOf('condic') > -1);
+  const kPag  = claves.find(k => k.toLowerCase().trim() === 'pagada');
+
+  ventas.forEach(r => {
+    const cod = String(r['Código'] || r['Codigo'] || '').trim().toLowerCase();
+    if (!cod) return;
+
+    if (!kCond) { s.add(cod); return; }   // sin columna Condición: como antes
+
+    const cond = String(r[kCond] || '').trim().toLowerCase();
+    const pag  = kPag ? String(r[kPag] || '').trim().toLowerCase() : '';
+
+    if (cond === 'vendido' || pag === 'pagado') s.add(cod);
+  });
+  return s;
+}
+
+
+// ---------------------------------------------------------------
+// Nombres de proveedora
+// ---------------------------------------------------------------
+async function loadProveedoras() {
+  try {
+    const data = await api('getSheet', { sheet: 'BD_Prov' });
+    cachedProveedoras = data.rows || [];
+    return cachedProveedoras.length;
+  } catch (e) {
+    cachedProveedoras = [];
+    return 0;
+  }
+}
+
+function getNombre(num) {
+  const n = parseInt(num);
+  if (!n || !cachedProveedoras.length) return '';
+  const p = cachedProveedoras.find(r => {
+    const v = r['a'] !== undefined ? r['a'] : r[Object.keys(r)[0]];
+    return parseInt(v) === n;
+  });
+  return p ? (p['Proveedor'] || p[Object.keys(p)[1]] || '') : '';
+}
+
+// Si el nombre no está en la lista que tenemos, lo va a buscar al
+// servidor en el momento en vez de dejar el campo vacío.
+async function completarNombre(num, inputId) {
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  let nombre = getNombre(num);
+  if (!nombre && num) {
+    el.value = 'buscando...';
+    await loadProveedoras();
+    nombre = getNombre(num);
+  }
+  el.value = nombre || (num ? '(no está en BD_Prov)' : '');
+}
+
+async function buscarNombreAdmin() {
+  const num = document.getElementById('pago-nro').value;
+  completarNombre(num, 'pago-nombre');
+
+  if (!num || num.length < 1) {
+    document.getElementById('prendas-pendientes-pago').style.display = 'none';
+    prendasPendientesCache = [];
+    ultimoNumCargado = null;
+    return;
+  }
+  if (num === ultimoNumCargado) return;
+  clearTimeout(buscarNombreTimer);
+  buscarNombreTimer = setTimeout(() => {
+    ultimoNumCargado = num;
+    cargarPrendasPendientesPago(num);
+  }, 800);
+}
+
+async function buscarNombreBusc() {
+  const num = document.getElementById('busc-nro').value;
+  completarNombre(num, 'busc-nombre');
+}
+
+// El botón ↻ de arriba, que ahora sí avisa lo que hizo.
+async function refrescarProveedoras() {
+  const btn = document.getElementById('btn-refresh-admin');
+  if (btn) { btn.disabled = true; btn.textContent = 'Actualizando...'; }
+  const n = await loadProveedoras();
+  const nroPago = document.getElementById('pago-nro');
+  if (nroPago && nroPago.value) completarNombre(nroPago.value, 'pago-nombre');
+  const nroBusc = document.getElementById('busc-nro');
+  if (nroBusc && nroBusc.value) completarNombre(nroBusc.value, 'busc-nombre');
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = n ? '✓ ' + n + ' proveedoras' : '✗ no se pudo';
+    setTimeout(() => { btn.textContent = '↻ Actualizar'; }, 2500);
+  }
+}
+
+
+// ---------------------------------------------------------------
+// Dashboard de la proveedora
+// ---------------------------------------------------------------
+function renderDashboard() {
+  document.getElementById('dash-nombre').textContent = currentUser.nombre;
+  document.getElementById('dash-num').textContent = `Proveedora #${currentUser.num}`;
+  document.getElementById('dash-content').style.display = 'none';
+  document.getElementById('dash-loader').style.display = 'flex';
+
+  const num = currentUser.num;
+  const ingresos = allData.ingresos || [];
+  const ventas = allData.ventas || [];
+  const pagos = allData.pagos || [];
+
+  const todasMisFilas = ingresos.filter(r => {
+    const cod = String(r['Código Unico'] || r['Codigo Unico'] || r['Código Único'] || '');
+    const m = cod.match(/^(\d+)-/);
+    return m && parseInt(m[1]) === num;
+  });
+  const misIngresos = todasMisFilas.filter(r => {
+    const estado = String(r['Estado Prenda'] || '').trim().toUpperCase();
+    return estado !== 'DEVUELTA';
+  });
+  prendasDevueltas = todasMisFilas.filter(r => {
+    const estado = String(r['Estado Prenda'] || '').trim().toUpperCase();
+    return estado === 'DEVUELTA';
+  }).map(r => ({
+    cod: String(r['Código Unico'] || r['Codigo Unico'] || r['Código Único'] || '').trim(),
+    desc: r['Producto'] || '—',
+    talle: r['Talle'] || ''
+  }));
+  renderDevueltas();
+
+  const vendidosCod = setVendidas(ventas);
+
+  prendas = misIngresos.map(r => {
+    const cod = String(r['Código Unico'] || r['Codigo Unico'] || r['Código Único'] || '').trim();
+    const vendida = vendidosCod.has(cod.toLowerCase());
+    const comision = r['Comisión Ainhoa'] || r['Comision Ainhoa'] || r['Comisión Innova'] || 0;
+    const gananciaProv = comision ? (r['Ganancia proveedor'] || 0) : 0;
+    const tieneComision = !!comision;
+    return {
+      cod,
+      desc: r['Producto'] || '—',
+      talle: r['Talle'] || '',
+      precioVenta: r['Precio venta'] || 0,
+      gananciaProv,
+      tieneComision,
+      pagada: !!r['Pagada'],
+      vendida
+    };
+  });
+
+  const vendidas = prendas.filter(p => p.vendida);
+  const stock = prendas.filter(p => !p.vendida);
+  const totalGanancia = vendidas.reduce((s, p) => s + (p.gananciaProv || 0), 0);
+
+  const misPagos = pagos.filter(r => {
+    const keys = Object.keys(r);
+    const nroKey = keys.find(k => k.toLowerCase().indexOf('nro') > -1 || k.toLowerCase().indexOf('prov') > -1);
+    return nroKey && parseInt(r[nroKey]) === num;
+  });
+  const totalCobrado = misPagos.reduce((s, r) => s + (parseFloat(r['Importe']) || 0), 0);
+  const pendiente = totalGanancia - totalCobrado;
+
+  const totalStock = stock.reduce((s, p) => s + (p.gananciaProv || 0), 0);
+  const potencial = totalGanancia + totalStock;
+
+  const pctVendido = prendas.length ? Math.round((vendidas.length / prendas.length) * 100) : 0;
+  const publicadas = stock.filter(p => p.precioVenta > 0);
+
+  document.getElementById('stat-total').textContent = prendas.length;
+  document.getElementById('stat-vendidas').textContent = vendidas.length;
+  document.getElementById('stat-porcentaje').textContent = pctVendido > 50 ? pctVendido + '% vendido' : '';
+  document.getElementById('stat-stock').textContent = publicadas.length;
+  document.getElementById('saldo-pendiente').textContent = fmt(pendiente);
+  document.getElementById('saldo-cobrado').textContent = fmt(totalCobrado);
+  document.getElementById('saldo-potencial').textContent = fmt(potencial);
+
+  renderPrendas('todas');
+  renderPagos(misPagos);
+
+  document.getElementById('dash-loader').style.display = 'none';
+  document.getElementById('dash-content').style.display = 'block';
+}
+
+
+// ---------------------------------------------------------------
+// Proveedoras con saldo pendiente
+// ---------------------------------------------------------------
+async function cargarPagosPendientes() {
+  const lista = document.getElementById('pendientes-list');
+  lista.innerHTML = '<div class="loader"><div class="spinner"></div><p>Calculando saldos...</p></div>';
+  try {
+    const [provR, ingR, venR, pagR] = await Promise.all([
+      api('getSheet', { sheet: 'BD_Prov' }),
+      api('getSheet', { sheet: 'Ingresos' }),
+      api('getSheet', { sheet: 'Ventas' }),
+      api('getSheet', { sheet: 'Liquidaciones' })
+    ]);
+    const provRows = provR.rows || [];
+    const ingresos = ingR.rows || [];
+    const ventas = venR.rows || [];
+    const pagos = pagR.rows || [];
+
+    // Aprovechamos la bajada para tener los nombres al día.
+    if (provRows.length) cachedProveedoras = provRows;
+
+    const vendidosCod = setVendidas(ventas);
+
+    const resultados = provRows.map(provRow => {
+      const num = parseInt(provRow[Object.keys(provRow)[0]]);
+      const nombre = provRow['Proveedor'] || provRow[Object.keys(provRow)[1]] || '';
+      if (!num) return null;
+
+      const misIngresos = ingresos.filter(r => {
+        const cod = String(r['Código Unico'] || r['Codigo Unico'] || r['Código Único'] || '');
+        const m = cod.match(/^(\d+)-/);
+        return m && parseInt(m[1]) === num;
+      });
+      const vendidas = misIngresos.filter(r => {
+        const cod = String(r['Código Unico'] || r['Codigo Unico'] || r['Código Único'] || '').trim();
+        return vendidosCod.has(cod.toLowerCase());
+      });
+      const totalGanancia = vendidas.reduce((s, r) => {
+        const comision = r['Comisión Ainhoa'] || r['Comision Ainhoa'] || 0;
+        return s + (comision ? (parseFloat(r['Ganancia proveedor']) || 0) : 0);
+      }, 0);
+
+      const misPagos = pagos.filter(p => parseInt(p['Nro Prov']) === num);
+      const totalCobrado = misPagos.reduce((s, p) => s + (parseFloat(p['Importe']) || 0), 0);
+      const pendiente = totalGanancia - totalCobrado;
+
+      return { num, nombre, totalGanancia, totalCobrado, pendiente, vendidasCount: vendidas.length };
+    }).filter(r => r && r.pendiente > 0);
+
+    resultados.sort((a, b) => b.pendiente - a.pendiente);
+
+    if (!resultados.length) {
+      lista.innerHTML = '<div class="empty-state">No hay saldos pendientes</div>';
+      return;
+    }
+
+    const totalGeneral = resultados.reduce((s, r) => s + r.pendiente, 0);
+
+    lista.innerHTML = `
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">${resultados.length} proveedoras con saldo · Total adeudado: <strong style="color:var(--brown);">${fmt(totalGeneral)}</strong></div>
+    ` + resultados.map(r => `
+      <div class="prenda-item" style="margin-bottom:8px;cursor:pointer;" onclick="elegirParaPagar(${r.num})">
+        <div>
+          <div class="prenda-cod">#${r.num}</div>
+          <div class="prenda-desc">${r.nombre}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px;">${r.vendidasCount} prendas vendidas · Cobrado: ${fmt(r.totalCobrado)}</div>
+        </div>
+        <div class="prenda-right">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--brown);">${fmt(r.pendiente)}</div>
+          <div style="font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;">pendiente</div>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    lista.innerHTML = '<div class="empty-state">Error al calcular pagos pendientes</div>';
+  }
+}
+
+
+// ---------------------------------------------------------------
+// Buscar proveedora (admin)
+// ---------------------------------------------------------------
+async function buscarAdmin() {
+  const num = parseInt(document.getElementById('busc-nro').value);
+  const resultEl = document.getElementById('buscar-result');
+  resultEl.innerHTML = '<div class="loader"><div class="spinner"></div><p>Buscando...</p></div>';
+
+  try {
+    const [provR, ingR, venR, pagR] = await Promise.all([
+      api('getSheet', { sheet: 'BD_Prov' }),
+      api('getSheet', { sheet: 'Ingresos' }),
+      api('getSheet', { sheet: 'Ventas' }),
+      api('getSheet', { sheet: 'Liquidaciones' })
+    ]);
+    const provRows = provR.rows || [];
+    const ingresos = ingR.rows || [];
+    const ventas = venR.rows || [];
+    const pagos = pagR.rows || [];
+
+    if (provRows.length) cachedProveedoras = provRows;
+
+    const provRow = provRows.find(r => parseInt(r[Object.keys(r)[0]]) === num);
+    if (!provRow) { resultEl.innerHTML = '<div class="empty-state">Proveedora no encontrada</div>'; return; }
+    const nombre = provRow['Proveedor'] || provRow[Object.keys(provRow)[1]] || '';
+
+    const misIngresos = ingresos.filter(r => {
+      const cod = String(r['Código Unico'] || r['Codigo Unico'] || r['Código Único'] || '');
+      const m = cod.match(/^(\d+)-/);
+      return m && parseInt(m[1]) === num;
+    });
+
+    const vendidosCod = setVendidas(ventas);
+    const vendidas = misIngresos.filter(r => {
+      const cod = String(r['Código Unico'] || r['Codigo Unico'] || r['Código Único'] || '').trim();
+      return vendidosCod.has(cod.toLowerCase());
+    });
+    const totalGanancia = vendidas.reduce((s, r) => {
+      const comision = r['Comisión Ainhoa'] || r['Comision Ainhoa'] || 0;
+      return s + (comision ? (parseFloat(r['Ganancia proveedor']) || 0) : 0);
+    }, 0);
+
+    const misPagos = pagos.filter(r => parseInt(r['Nro Prov']) === num);
+    const totalCobrado = misPagos.reduce((s, r) => s + (parseFloat(r['Importe']) || 0), 0);
+    const pendiente = totalGanancia - totalCobrado;
+
+    const historialHtml = misPagos.length ? misPagos.map(p => {
+      const importe = parseFloat(p['Importe'] || 0);
+      if (!importe) return '';
+      const medio = p['Medio'] || 'Liquidación';
+      return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;">
+        <span>${formatFecha(p['Fecha'])} · ${medio}</span>
+        <span style="color:var(--green);font-family:'Cormorant Garamond',serif;font-size:15px;">${fmt(importe)}</span>
+      </div>`;
+    }).filter(Boolean).join('') : '<div style="font-size:12px;color:var(--muted);padding:8px 0;">Sin cobros registrados</div>';
+
+    resultEl.innerHTML = `
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-label">Proveedora #${num}</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--dark);margin-bottom:16px;">${nombre}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+          <div><div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Total vendido</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--dark);">${fmt(totalGanancia)}</div></div>
+          <div><div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Ya cobrado</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--green);">${fmt(totalCobrado)}</div></div>
+          <div><div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Pendiente</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--brown);">${fmt(pendiente)}</div></div>
+        </div>
+        <div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;border-top:1px solid var(--border);padding-top:14px;">Historial de cobros</div>
+        ${historialHtml}
+      </div>`;
+  } catch (e) {
+    resultEl.innerHTML = '<div class="empty-state">Error al cargar datos</div>';
+  }
+}
 // INIT
 showMode();
 </script>
