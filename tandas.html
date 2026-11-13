@@ -267,7 +267,7 @@ function vistaVenta() {
 
   <div class="card">
     <div class="f"><label for="cod">Código de la prenda</label>
-      <input id="cod" placeholder="107-07-11" autocomplete="off" autocapitalize="off"
+      <input id="cod" placeholder="107-07-11  ·  o solo 107-07" autocomplete="off" autocapitalize="off"
              onkeydown="if(event.key==='Enter')buscarPrenda()"></div>
     <div id="hallazgo"></div>
     <div class="f"><label for="ig">Usuario de Instagram</label>
@@ -287,12 +287,39 @@ async function buscarPrenda() {
   if (!v.trim()) return;
   $('hallazgo').innerHTML = '<div class="cargando">Buscando…</div>';
   const r = await api('tandaBuscarPrenda', { codigo: v.trim() });
-  buscada = r && r.ok ? r : null;
+  buscada = r && r.ok && !r.varias ? r : null;
+
   if (!r || !r.ok) {
     $('hallazgo').innerHTML = `<div class="card malo" style="margin-bottom:13px">
       ${esc((r && r.error) || 'No encontré esa prenda.')}</div>`;
     return;
   }
+
+  // Varias prendas con el mismo proveedor y numero: que elija cual.
+  if (r.varias) {
+    $('hallazgo').innerHTML = `
+      <div class="proto">Encontré ${r.opciones.length} prendas con ese número.
+        Tocá la que buscás.</div>
+      ${r.opciones.map(o => `<div class="card ${o.disponible ? 'listo' : 'malo'}"
+          style="margin-bottom:8px">
+        <div class="item" style="border:0;padding:0">
+          <div class="l"><span class="cod">${esc(o.codigo)}</span>
+            <div style="font-weight:600;margin-top:2px">${esc(o.descripcion)}</div>
+            <div class="mini">${esc(o.marca)}${o.marca ? ' · ' : ''}talle ${esc(o.talle)}</div>
+            <div class="chips">${o.disponible
+              ? '<span class="chip c-ok">disponible</span>'
+              : `<span class="chip c-mal">${esc(o.motivo)}</span>`}</div></div>
+          <div class="r"><div class="big-num">${plata(o.transferencia)}</div>
+            <div class="mini">transferencia</div>
+            <div class="plata" style="margin-top:4px">${plata(o.efectivo)}</div>
+            <div class="mini">efectivo</div></div>
+        </div>
+        ${o.disponible ? `<button class="btn sm sec" style="margin-top:8px"
+          onclick="elegirCodigo('${esc(o.codigo)}')">Usar este código</button>` : ''}
+      </div>`).join('')}`;
+    return;
+  }
+
   $('hallazgo').innerHTML = `<div class="card listo" style="margin-bottom:13px">
     <div class="item" style="border:0;padding:0">
       <div class="l"><span class="cod">${esc(r.codigo)}</span>
@@ -304,6 +331,14 @@ async function buscarPrenda() {
         <div class="plata" style="margin-top:4px">${plata(r.efectivo)}</div>
         <div class="mini">efectivo</div></div>
     </div></div>`;
+}
+
+// Toca una de las opciones: la pone en el campo y la deja lista.
+function elegirCodigo(cod) {
+  $('cod').value = cod;
+  buscarPrenda();
+  const ig = $('ig');
+  if (ig && !ig.value.trim()) ig.focus();
 }
 
 async function accionReservar() {
