@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mi pedido · Ainhoa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;500&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* ============================================================
+   LA PANTALLA DE LA CLIENTA
+   Se abre con el link que le manda Ainhoa por Instagram.
+   No pide contrasena: el codigo secreto del link es la llave.
+   No muestra nada de otras clientas ni nada interno.
+   ============================================================ */
+:root{
+  --papel:#FCFBF7; --tarjeta:#FFFFFF; --linea:#E8E1D5; --linea2:#F2EDE4;
+  --tinta:#1F1C18; --tenue:#6E675E; --bronce:#6B5D3F;
+  --salvia:#53705F; --salvia-bg:#EFF4F0; --salvia-fuerte:#48634F;
+  --ok:#2F6B46; --mal:#9E3F32;
+  --display:"Cormorant Garamond",Georgia,serif;
+  --texto:"Inter",-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--papel);color:var(--tinta);font-family:var(--texto);
+  font-size:14px;line-height:1.5;-webkit-text-size-adjust:100%}
+.wrap{max-width:480px;margin:0 auto;padding-bottom:44px;
+  padding-left:max(18px,env(safe-area-inset-left,0px));
+  padding-right:max(18px,env(safe-area-inset-right,0px));
+  padding-top:env(safe-area-inset-top,0px)}
+h2,h3{margin:0;text-wrap:balance}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit;font-size:16px;width:100%;padding:12px 13px;
+  border:1px solid var(--linea);border-radius:11px;background:var(--tarjeta);
+  color:var(--tinta);min-height:46px}
+input:focus{outline:2px solid var(--salvia);outline-offset:1px}
+label{display:block;font-size:12.5px;color:var(--tenue);font-weight:600;margin-bottom:5px}
+.f{margin-bottom:12px}
+.f:last-child{margin-bottom:0}
+
+.encabezado-cl{text-align:center;padding:16px 0 2px}
+.logo-cl{font-family:var(--display);font-size:23px;letter-spacing:.3em;
+  font-weight:300;padding-left:.3em}
+.saludo{padding:14px 0 6px}
+.saludo h2{font-family:var(--display);font-size:clamp(29px,8.5vw,35px);
+  font-weight:300;line-height:1.08;letter-spacing:.01em}
+.saludo h2::after{content:"";display:block;width:46px;height:2px;
+  background:var(--salvia);margin-top:13px;border-radius:2px}
+.intro{font-size:14.5px;margin:9px 0 0}
+.intro2{font-size:13.5px;color:var(--tenue);margin:3px 0 0}
+.corazon{width:.78em;height:.78em;color:var(--salvia);vertical-align:.01em}
+
+.rotulo{font-size:10.5px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--tenue);font-weight:700;margin:22px 0 9px;padding-bottom:6px;
+  border-bottom:1px solid var(--linea)}
+
+.card{background:var(--tarjeta);border:1px solid var(--linea);border-radius:15px;
+  padding:17px;margin-bottom:12px}
+.card.info{background:var(--salvia-bg);border-color:var(--salvia)}
+.card.guardado{border-color:var(--salvia);border-width:1.5px}
+.card.prendas{padding:4px 17px 14px}
+
+.fila-prenda{display:flex;align-items:flex-start;gap:13px;padding:14px 0;
+  border-bottom:1px solid var(--linea2)}
+.fila-prenda .l{flex:1;min-width:0}
+.fila-prenda .r{text-align:right;white-space:nowrap;padding-top:2px}
+.fila-prenda strong{font-family:var(--display);font-size:19px;font-weight:500;
+  line-height:1.22;display:block}
+.fila-prenda .sub{font-size:13px;color:var(--tenue);margin-top:2px}
+.fila-prenda .cod{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;
+  color:var(--tenue);letter-spacing:.06em;margin-top:3px;opacity:.85}
+
+.plata{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;
+  letter-spacing:-.01em}
+.plata.ok{color:var(--ok)}
+.resumen-corto{padding-top:13px;border-top:1px solid var(--linea)}
+.lin{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+  padding:5px 0;font-size:14px}
+.lin span{color:var(--tenue)}
+.lin b{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lin .suave{color:var(--tenue);font-weight:500;font-size:13px}
+.lin.total{margin-top:7px;padding-top:11px;border-top:1px solid var(--linea)}
+.lin.total span{color:var(--tinta);font-weight:600;font-size:14.5px}
+.lin.total b{font-size:22px;color:var(--salvia-fuerte);letter-spacing:-.02em}
+
+.opciones{display:flex;flex-direction:column;gap:8px}
+.opcion{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  min-height:48px;background:var(--tarjeta);border:1px solid var(--linea);
+  border-radius:14px;padding:11px 14px;color:var(--tinta)}
+.opcion .ico{width:21px;height:21px;flex:none;color:var(--tenue)}
+.opcion .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.opcion .t{font-weight:600;font-size:14px;line-height:1.25}
+.opcion .p{font-size:12.5px;color:var(--tenue);font-variant-numeric:tabular-nums}
+.opcion .check{width:20px;height:20px;flex:none;border:1.5px solid var(--linea);
+  border-radius:50%;display:grid;place-items:center;color:transparent}
+.opcion .check svg{display:block;width:12px;height:12px;stroke-width:2.6}
+.opcion.elegida{border-color:var(--salvia);border-width:1.5px;background:var(--salvia-bg)}
+.opcion.elegida .ico{color:var(--salvia)}
+.opcion.elegida .p{color:var(--salvia-fuerte)}
+.opcion.elegida .check{background:var(--salvia-fuerte);border-color:var(--salvia-fuerte);color:#fff}
+.opciones + .card{margin-top:10px}
+
+.lista-horarios{margin-top:5px;font-size:13.5px;line-height:1.65}
+.aclara{font-size:12.5px;color:var(--tenue);line-height:1.5;margin:11px 0 0}
+.aclara strong{color:var(--tinta)}
+.proto{border:1px solid var(--linea);border-radius:12px;padding:12px 14px;
+  font-size:13px;line-height:1.55;margin:12px 0}
+
+.ig-ref{display:flex;align-items:center;gap:7px;font-size:13.5px;
+  color:var(--tenue);margin-bottom:13px}
+.ico-mini{width:15px;height:15px;color:#fff;background:var(--salvia-fuerte);
+  border-radius:50%;padding:3px;stroke-width:3;flex:none}
+
+.alias-fila{display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding-bottom:11px;border-bottom:1px solid var(--linea2);margin-bottom:4px}
+.alias-fila button{min-height:44px;padding:0 17px;border-radius:11px;flex:none;
+  background:transparent;border:1px solid var(--linea);color:var(--tinta);
+  font-size:12px;font-weight:600}
+.etq{display:block;font-size:11.5px;color:var(--tenue);font-weight:600;margin-bottom:2px}
+.alias{font-size:16.5px}
+
+.tilde-fila{display:flex;align-items:center;gap:9px;margin-bottom:12px;font-size:15px}
+.ico-ok{width:20px;height:20px;flex:none;color:#fff;background:var(--salvia-fuerte);
+  border-radius:50%;padding:4px;stroke-width:2.8}
+.editar{margin-left:auto;background:none;border:0;color:var(--salvia-fuerte);
+  font-size:13px;font-weight:600;text-decoration:underline;padding:0 4px;
+  min-height:44px;display:inline-flex;align-items:center}
+.lista-datos{display:flex;flex-direction:column;gap:8px;font-size:14px}
+.lista-datos>div{display:flex;gap:12px;align-items:baseline}
+.lista-datos span{flex:none;width:88px;font-size:12px;color:var(--tenue);font-weight:600}
+
+.err{color:var(--mal);font-size:12.5px;margin:5px 0 0;line-height:1.4}
+input.malo{border-color:var(--mal);border-width:1.5px}
+
+.btn-guardar{width:100%;background:var(--salvia-fuerte);border:1px solid var(--salvia-fuerte);
+  color:#fff;border-radius:13px;padding:16px;font-size:12.5px;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;margin-top:14px;min-height:52px}
+.btn-guardar:disabled{opacity:.55;cursor:wait}
+.btn-ver{width:100%;background:transparent;border:1px solid var(--linea);
+  color:var(--tinta);border-radius:13px;padding:15px;font-size:13px;
+  font-weight:600;margin-top:12px;min-height:50px}
+.pie{font-size:12.5px;color:var(--tenue);text-align:center;margin:9px 0 0}
+
+.cargando{text-align:center;padding:70px 20px;color:var(--tenue);font-size:14px}
+.aviso-flota{position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--tinta);
+  color:var(--papel);padding:12px 18px;border-radius:11px;font-size:13px;
+  z-index:60;max-width:min(92vw,420px);box-shadow:0 6px 24px rgba(0,0,0,.2)}
+.aviso-flota.err{background:var(--mal)}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app">
+  <div class="encabezado-cl"><span class="logo-cl">AINHOA</span></div>
+  <div class="cargando">Buscando tu pedido…</div>
+</div>
+<div id="aviso"></div>
+
+<script>
+// ============================================================
+// CONFIGURACION
+// ============================================================
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyZbEeODB-LF71H32WLSJafEKpl4sQNzMEiNQ2nvxK6LjNc1pmX0NMEbKSi5s7EXk9d/exec';
+
+// El codigo secreto viene en el link:  mipedido.html?t=xxxxxxxx
+const TOKEN = new URLSearchParams(location.search).get('t') || '';
+
+let PEDIDO = null, ITEMS = [], CFG = null;
+let PASO = 'form';          // form | guardado | confirmado
+let ERR = {}, GUARDANDO = false;
+
+// ---- hablar con el motor ----
+// Mismo patron que el portal de proveedoras: cada pedido lleva un
+// numero distinto al final para que el celular no guarde la respuesta.
+async function api(action, params = {}) {
+  const url = new URL(APPS_SCRIPT_URL);
+  url.searchParams.set('action', action);
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null) url.searchParams.set(k, v);
+  });
+  url.searchParams.set('_', Date.now() + '' + Math.floor(Math.random() * 1000));
+  const res = await fetch(url.toString(), { cache: 'no-store' });
+  return await res.json();
+}
+
+// ---- utilidades ----
+const $ = id => document.getElementById(id);
+const plata = n => '$' + String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+  ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+let avisoT;
+function avisar(msg, mal) {
+  $('aviso').innerHTML = '<div class="aviso-flota' + (mal ? ' err' : '') + '">' + esc(msg) + '</div>';
+  clearTimeout(avisoT);
+  avisoT = setTimeout(() => { $('aviso').innerHTML = ''; }, 3400);
+}
+
+const ICO = {
+  tienda:'<path d="M4 9h16v11H4Z"/><path d="M3 9l2-5h14l2 5"/><path d="M10 20v-5h4v5"/>',
+  moto:  '<circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M9 17h6"/><path d="M6 14V8h6l3 4h3"/>',
+  caja:  '<path d="M4 8l8-4 8 4v9l-8 4-8-4Z"/><path d="M4 8l8 4 8-4"/><path d="M12 12v9"/>',
+  banco: '<path d="M3 10h18"/><path d="M5 10v8m5-8v8m4-8v8m5-8v8"/><path d="M12 3 3 8h18Z"/><path d="M3 21h18"/>',
+  tarjeta:'<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/>',
+  billete:'<rect x="2" y="7" width="20" height="10" rx="2"/><circle cx="12" cy="12" r="2.5"/>',
+  tilde: '<path d="m5 13 4 4L19 7"/>'
+};
+const svgIco = (d, cls) => `<svg class="${cls || 'ico'}" viewBox="0 0 24 24" fill="none"
+  stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"
+  aria-hidden="true">${d}</svg>`;
+const CORAZON = `<svg class="corazon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+  <path d="M12 21S3 15.6 3 9.8A4.8 4.8 0 0 1 12 7.2 4.8 4.8 0 0 1 21 9.8C21 15.6 12 21 12 21Z"/></svg>`;
+
+
+// ============================================================
+// ARRANQUE
+// ============================================================
+async function arrancar() {
+  if (!TOKEN || TOKEN.length < 16) return pantallaSinPedido();
+  try {
+    const [r, c] = await Promise.all([
+      api('tandaPedido', { t: TOKEN }),
+      api('tandaConfig')
+    ]);
+    if (!r || !r.ok) return pantallaSinPedido();
+    PEDIDO = r.pedido; ITEMS = r.items || []; CFG = (c && c.ok) ? c.config : configPorDefecto();
+    PASO = PEDIDO.datosCompletos ? 'guardado' : 'form';
+    pintar();
+  } catch (e) {
+    $('app').innerHTML = cabecera() + `<div class="cargando">
+      No pudimos conectarnos. Fijate que tengas internet y volvé a entrar al link.</div>`;
+  }
+}
+
+// Si el servidor no contesta la configuracion, no invento precios de envio:
+// dejo todo en "a cotizar" y que Ainhoa lo confirme.
+function configPorDefecto() {
+  return { alias:'', direccion:'', horarios:[], envios:{}, cadete:'', cadeteCbu:'', diasCadete:'' };
+}
+
+function pantallaSinPedido() {
+  $('app').innerHTML = cabecera() + `
+    <div class="saludo"><h2>Enlace no válido</h2>
+      <p class="intro">Este enlace no corresponde a ningún pedido.</p>
+      <p class="intro2">Puede que esté vencido o mal copiado.
+        Escribinos por Instagram y te mandamos uno nuevo.</p></div>`;
+}
+
+const cabecera = () => `<div class="encabezado-cl"><span class="logo-cl">AINHOA</span></div>`;
+
+
+// ============================================================
+// LAS OPCIONES DE ENTREGA
+// Los precios salen de la configuracion del servidor, no de aca.
+// ============================================================
+function opcionesEntrega() {
+  const e = (CFG && CFG.envios) || {};
+  const ops = [
+    { id:'retiro', entrega:'Retiro', zona:'', titulo:'Retirar por Casa Ainhoa',
+      bajada:'Sin cargo', precio:0, icono:ICO.tienda }
+  ];
+  Object.keys(e).forEach(zona => {
+    ops.push({ id:'z_' + zona, entrega:'Envío local', zona:zona,
+               titulo:'Envío a ' + zona, bajada:plata(e[zona]),
+               precio:Number(e[zona]) || 0, icono:ICO.moto });
+  });
+  ops.push({ id:'interior', entrega:'Envío al interior', zona:'',
+             titulo:'Envío fuera de Tucumán', bajada:'A cotizar',
+             precio:null, icono:ICO.caja });
+  return ops;
+}
+
+function opcionActual() {
+  const ops = opcionesEntrega();
+  if (!PEDIDO || !PEDIDO.entrega) return null;
+  if (PEDIDO.entrega === 'Retiro') return ops[0];
+  if (PEDIDO.entrega === 'Envío al interior') return ops[ops.length - 1];
+  return ops.find(o => o.zona && o.zona === PEDIDO.zona) || null;
+}
+
+const subtotal = () => ITEMS.reduce((s, i) => s + (Number(i.precio) || 0), 0);
+const montoDesc = () => Math.round(subtotal() * (Number(PEDIDO.descuento) || 0) / 100);
+const totalAinhoa = () => subtotal() - montoDesc();
+
+
+// ============================================================
+// PINTAR
+// ============================================================
+function pintar() {
+  if (PASO === 'confirmado') { $('app').innerHTML = cabecera() + pantallaConfirmada(); return; }
+  const nombre = String(PEDIDO.nombre || '').trim().split(' ')[0];
+  $('app').innerHTML = cabecera() + `
+    <div class="saludo"><h2>¡Hola${nombre ? ', ' + esc(nombre) : ''}! ${CORAZON}</h2>
+      <p class="intro">Estas son las prendas que elegiste en Ainhoa.</p>
+      <p class="intro2">Elegí cómo recibirlas y cómo preferís pagar.</p></div>
+    <h3 class="rotulo">Tus prendas</h3>
+    ${tarjetaPrendas()}
+    ${PASO === 'guardado' ? tarjetaGuardados() : formulario()}`;
+  pintarCuenta();
+}
+
+function tarjetaPrendas() {
+  return `<div class="card prendas">
+    ${ITEMS.map(i => `<div class="fila-prenda">
+      <div class="l"><strong>${esc(i.descripcion || i.codigo)}</strong>
+        <div class="sub">${i.marca && i.marca !== '—' ? esc(i.marca) + ' · ' : ''}Talle ${esc(i.talle)}</div>
+        <div class="cod">${esc(i.codigo)}</div></div>
+      <div class="r"><span class="plata">${plata(i.precio)}</span></div></div>`).join('')}
+    <div class="resumen-corto">
+      <div class="lin"><span>Subtotal de prendas</span><b class="plata">${plata(subtotal())}</b></div>
+      <div class="lin" id="filaDesc"></div>
+      <div class="lin" id="filaEnvio"></div>
+      <div class="lin total" id="filaTotal"></div>
+    </div></div>`;
+}
+
+function pintarCuenta() {
+  const ft = $('filaTotal'), fe = $('filaEnvio'), fd = $('filaDesc');
+  if (!ft || !fe) return;
+  const op = opcionActual();
+
+  if (fd) {
+    const d = montoDesc();
+    fd.style.display = PEDIDO.descuento ? '' : 'none';
+    fd.innerHTML = PEDIDO.descuento
+      ? `<span>Descuento ${PEDIDO.descuento}%</span><b class="plata ok">− ${plata(d)}</b>` : '';
+  }
+
+  let txt, monto;
+  if (!op)                               { monto = null; txt = 'Pendiente de elegir'; }
+  else if (op.entrega === 'Retiro')      { monto = 0;    txt = 'Retiro sin cargo'; }
+  else if (op.precio === null)           { monto = null; txt = 'A cotizar'; }
+  else                                   { monto = op.precio; txt = op.zona; }
+
+  fe.innerHTML = `<span>Envío</span>${monto
+    ? `<b class="plata">${plata(monto)}</b>`
+    : `<b class="suave">${esc(txt)}</b>`}`;
+  ft.innerHTML = `<span>Total de prendas</span><b>${plata(totalAinhoa())}</b>`;
+}
+
+
+// ---------- ya completó ----------
+function tarjetaGuardados() {
+  const op = opcionActual();
+  return `<h3 class="rotulo">Tus datos</h3>
+  <div class="card guardado">
+    <div class="tilde-fila">${svgIco(ICO.tilde, 'ico-ok')}<strong>Tus datos están guardados</strong>
+      <button class="editar" onclick="PASO='form';pintar()">Editar</button></div>
+    <div class="lista-datos">
+      <div><span>Entrega</span>${esc(op ? op.titulo : PEDIDO.entrega)}</div>
+      ${PEDIDO.direccion ? `<div><span>Dirección</span>${esc(PEDIDO.direccion)}${
+        PEDIDO.barrio ? ', ' + esc(PEDIDO.barrio) : ''}</div>` : ''}
+      ${PEDIDO.telefono ? `<div><span>Teléfono</span>${esc(PEDIDO.telefono)}</div>` : ''}
+      ${PEDIDO.medioPago ? `<div><span>Pago</span>${esc(PEDIDO.medioPago)}</div>` : ''}
+    </div>
+    ${proximoPaso()}
+  </div>`;
+}
+
+function proximoPaso() {
+  let t = '';
+  if (PEDIDO.medioPago === 'Transferencia')
+    t = 'Cuando transfieras, envianos el comprobante por Instagram para que podamos verificar el pago.';
+  else if (PEDIDO.medioPago === 'Mercado Pago o tarjeta')
+    t = 'Te enviaremos tu enlace de pago por Instagram.';
+  else if (PEDIDO.medioPago === 'Efectivo')
+    t = PEDIDO.entrega === 'Retiro'
+      ? 'Podés abonar cuando retires tu pedido por Casa Ainhoa.'
+      : 'Podés abonar al recibir tu pedido.';
+  if (PEDIDO.envioPorCotizar)
+    t += (t ? ' ' : '') + 'Te confirmaremos el costo del envío antes de coordinar el despacho.';
+  return t ? `<div class="proto">${esc(t)}</div>` : '';
+}
+
+
+// ---------- el formulario ----------
+function formulario() {
+  const op = opcionActual();
+  const local = op && op.entrega === 'Envío local';
+  const interior = op && op.entrega === 'Envío al interior';
+  const retiro = op && op.entrega === 'Retiro';
+
+  return `
+  <h3 class="rotulo">Tus datos</h3>
+  <div class="card">
+    <div class="ig-ref">${svgIco(ICO.tilde, 'ico-mini')}<span>@${esc(PEDIDO.instagram)}</span></div>
+    ${campo('fNom', 'Nombre y apellido', PEDIDO.nombre, 'María Pérez')}
+  </div>
+
+  <h3 class="rotulo">Entrega</h3>
+  ${ERR.entrega ? `<p class="err">${esc(ERR.entrega)}</p>` : ''}
+  <div class="opciones">${opcionesEntrega().map(o => `
+    <button type="button" class="opcion${op && op.id === o.id ? ' elegida' : ''}"
+      onclick="elegirEntrega('${o.id}')" aria-pressed="${!!(op && op.id === o.id)}">
+      ${svgIco(o.icono)}
+      <span class="tx"><span class="t">${esc(o.titulo)}</span>
+        <span class="p">${esc(o.bajada)}</span></span>
+      <span class="check">${svgIco(ICO.tilde)}</span></button>`).join('')}</div>
+
+  ${retiro && CFG.direccion ? `<div class="card info"><strong>Casa Ainhoa</strong>
+    <div class="lista-horarios"><div>${esc(CFG.direccion)}</div>
+      ${(CFG.horarios || []).map(h => `<div>${esc(h)}</div>`).join('')}</div></div>` : ''}
+
+  ${local ? `<div class="card">
+    ${campo('fDir', 'Dirección completa', PEDIDO.direccion, 'Av. Aconquija 1820')}
+    ${campo('fBar', 'Barrio', PEDIDO.barrio, 'Lomas de Tafí')}
+    ${campo('fRef', 'Referencias (opcional)', PEDIDO.referencias, 'Portón blanco, timbre 2')}
+    ${campo('fTel', 'Teléfono', PEDIDO.telefono, '381 500-0000', 'tel')}
+    ${campo('fFranja', '¿En qué franja estás?', PEDIDO.franja, 'de 14 a 17')}
+    ${CFG.diasCadete ? `<p class="aclara">Los envíos se hacen con nuestro cadete de confianza,
+      ${esc(CFG.diasCadete)}. Te confirmamos el día cuando coordinemos.</p>` : ''}
+  </div>` : ''}
+
+  ${interior ? `<div class="card">
+    ${campo('fTel', 'Teléfono', PEDIDO.telefono, '381 500-0000', 'tel')}
+    ${campo('fMail', 'Correo electrónico', PEDIDO.email, 'maria@mail.com', 'email')}
+    ${campo('fDir', 'Dirección completa', PEDIDO.direccion, 'Calle y número, piso, depto')}
+    ${campo('fCp', 'Código postal', PEDIDO.cp, '4000', 'cp')}
+    ${campo('fLoc', 'Localidad', PEDIDO.localidad, 'Salta')}
+    ${campo('fProv', 'Provincia', PEDIDO.provincia, 'Salta')}
+    <p class="aclara">El costo del envío lo cotizamos y te lo confirmamos antes de despachar.</p>
+  </div>` : ''}
+
+  ${op ? bloquePago(op) : ''}
+  ${op && PEDIDO.medioPago ? resumenFinal(op) : ''}
+
+  ${op ? `<button class="btn-guardar" id="btnGuardar" ${GUARDANDO ? 'disabled' : ''}
+      onclick="guardar()">${GUARDANDO ? 'Guardando…' : 'Guardar mis datos de compra'}</button>
+    <p class="pie">Guardar tus datos no confirma el pago.</p>` : ''}`;
+}
+
+function campo(id, etiqueta, valor, ejemplo, tipo) {
+  const extra = tipo === 'tel' ? ' type="tel" inputmode="tel"'
+              : tipo === 'cp' ? ' type="text" inputmode="numeric"'
+              : tipo === 'email' ? ' type="email" inputmode="email"' : '';
+  return `<div class="f"><label for="${id}">${esc(etiqueta)}</label>
+    <input id="${id}"${extra} value="${esc(valor || '')}" placeholder="${esc(ejemplo || '')}"
+      class="${ERR[id] ? 'malo' : ''}" oninput="limpiarErr('${id}')">
+    ${ERR[id] ? `<p class="err">${esc(ERR[id])}</p>` : ''}</div>`;
+}
+
+
+// ---------- pago ----------
+function bloquePago(op) {
+  const formas = [
+    { id:'Transferencia', titulo:'Transferencia', bajada:'A la cuenta de Ainhoa', icono:ICO.banco },
+    { id:'Mercado Pago o tarjeta', titulo:'Mercado Pago o tarjeta',
+      bajada:'Te mandamos el enlace', icono:ICO.tarjeta }
+  ];
+  // El efectivo solo donde tiene sentido. Nunca para el interior.
+  if (op.entrega === 'Retiro')
+    formas.push({ id:'Efectivo', titulo:'Efectivo al retirar',
+                  bajada:'Pagás en Casa Ainhoa', icono:ICO.billete });
+  else if (op.entrega === 'Envío local')
+    formas.push({ id:'Efectivo', titulo:'Efectivo al recibir',
+                  bajada:'Le pagás al cadete', icono:ICO.billete });
+
+  return `<h3 class="rotulo">Pago</h3>
+  ${ERR.pago ? `<p class="err">${esc(ERR.pago)}</p>` : ''}
+  <div class="opciones">${formas.map(f => `
+    <button type="button" class="opcion${PEDIDO.medioPago === f.id ? ' elegida' : ''}"
+      onclick="elegirPago('${f.id}')" aria-pressed="${PEDIDO.medioPago === f.id}">
+      ${svgIco(f.icono)}
+      <span class="tx"><span class="t">${esc(f.titulo)}</span>
+        <span class="p">${esc(f.bajada)}</span></span>
+      <span class="check">${svgIco(ICO.tilde)}</span></button>`).join('')}</div>
+  ${PEDIDO.medioPago ? detallePago(op) : ''}`;
+}
+
+function detallePago(op) {
+  if (PEDIDO.medioPago === 'Transferencia') {
+    return `<div class="card">
+      ${CFG.alias ? `<div class="alias-fila">
+        <div><span class="etq">Alias de Ainhoa</span><strong class="alias">${esc(CFG.alias)}</strong></div>
+        <button onclick="copiar('${esc(CFG.alias)}')">Copiar</button></div>` : ''}
+      <div class="lin"><span>A transferir a Ainhoa</span>
+        <b class="plata">${plata(totalAinhoa())}</b></div>
+      <p class="aclara">Cuando transfieras, envianos el comprobante por el chat de Instagram
+        para que podamos verificar el pago.</p></div>`;
+  }
+  if (PEDIDO.medioPago === 'Mercado Pago o tarjeta')
+    return `<div class="card"><p class="aclara" style="margin:0">
+      Te vamos a enviar un enlace de pago por Instagram.</p></div>`;
+  return `<div class="card"><p class="aclara" style="margin:0">${
+    op.entrega === 'Retiro'
+      ? 'Podés abonar cuando retires tu pedido por Casa Ainhoa.'
+      : 'Le pagás a ' + esc(CFG.cadete || 'nuestro cadete') +
+        ' cuando te lo entrega, todo junto: las prendas y el envío.'}</p></div>`;
+}
+
+function resumenFinal(op) {
+  const sub = subtotal(), d = montoDesc(), a = totalAinhoa(), envio = op.precio;
+  return `<h3 class="rotulo">Resumen</h3><div class="card">
+    <div class="lin"><span>Prendas</span><b class="plata">${plata(sub)}</b></div>
+    ${d ? `<div class="lin"><span>Descuento ${PEDIDO.descuento}%</span>
+      <b class="plata ok">− ${plata(d)}</b></div>` : ''}
+    <div class="lin total"><span>A pagar a Ainhoa</span><b>${plata(a)}</b></div>
+    ${envio === null
+      ? `<div class="lin"><span>Envío</span><b class="suave">A cotizar</b></div>`
+      : (envio ? `<div class="lin"><span>Envío, aparte a ${esc(CFG.cadete || 'el cadete')}</span>
+          <b class="plata">${plata(envio)}</b></div>` : '')}
+    ${envio && CFG.cadeteCbu ? `<p class="aclara">El envío va aparte: los ${plata(envio)}
+      se los pagás a ${esc(CFG.cadete)}, en efectivo cuando te lo entrega o por transferencia
+      a <strong>${esc(CFG.cadeteCbu)}</strong>.</p>` : ''}
+    ${envio ? `<p class="aclara" style="margin-bottom:0">En total vas a pagar
+      <strong>${plata(a + envio)}</strong>: ${plata(a)} a Ainhoa y ${plata(envio)}
+      a ${esc(CFG.cadete || 'el cadete')}.</p>` : ''}
+  </div>`;
+}
+
+
+// ---------- elegir ----------
+function elegirEntrega(id) {
+  guardarLoEscrito();
+  const o = opcionesEntrega().find(x => x.id === id);
+  PEDIDO.entrega = o.entrega; PEDIDO.zona = o.zona;
+  PEDIDO.envioCosto = o.precio; PEDIDO.envioPorCotizar = (o.precio === null);
+  if (o.entrega === 'Envío al interior' && PEDIDO.medioPago === 'Efectivo') PEDIDO.medioPago = '';
+  delete ERR.entrega;
+  pintar();
+}
+
+function elegirPago(id) {
+  guardarLoEscrito();
+  PEDIDO.medioPago = id; delete ERR.pago;
+  pintar();
+}
+
+// Antes de redibujar me quedo con lo que ya tipeó, para que no lo pierda.
+function guardarLoEscrito() {
+  const campos = { fNom:'nombre', fDir:'direccion', fBar:'barrio', fRef:'referencias',
+                   fTel:'telefono', fFranja:'franja', fMail:'email', fCp:'cp',
+                   fLoc:'localidad', fProv:'provincia' };
+  Object.keys(campos).forEach(id => {
+    const e = $(id);
+    if (e && e.value.trim()) PEDIDO[campos[id]] = e.value.trim();
+  });
+}
+
+function limpiarErr(id) {
+  if (!ERR[id]) return;
+  delete ERR[id];
+  const e = $(id);
+  if (e) { e.classList.remove('malo');
+           const p = e.parentNode.querySelector('.err'); if (p) p.remove(); }
+}
+
+function copiar(txt) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(() => avisar('Alias copiado'),
+                                            () => avisar('No pude copiar', true));
+  } else avisar('Copialo a mano: ' + txt);
+}
+
+
+// ---------- guardar ----------
+async function guardar() {
+  if (GUARDANDO) return;
+  const op = opcionActual();
+  ERR = {};
+  guardarLoEscrito();
+  const v = id => { const e = $(id); return e ? e.value.trim() : ''; };
+
+  if (!v('fNom')) ERR.fNom = 'Necesitamos tu nombre y apellido.';
+  if (!op) ERR.entrega = 'Elegí cómo querés recibir tus prendas.';
+  if (op && op.entrega === 'Envío local') {
+    if (!v('fDir')) ERR.fDir = 'Sin la dirección no podemos llegar.';
+    if (!v('fTel')) ERR.fTel = 'Necesitamos un teléfono para coordinar.';
+  }
+  if (op && op.entrega === 'Envío al interior') {
+    if (!v('fDir')) ERR.fDir = 'Falta la dirección completa.';
+    if (!v('fCp'))  ERR.fCp  = 'Falta el código postal.';
+    if (!v('fLoc')) ERR.fLoc = 'Falta la localidad.';
+    if (!v('fTel')) ERR.fTel = 'Necesitamos un teléfono.';
+  }
+  if (!PEDIDO.medioPago) ERR.pago = 'Elegí cómo preferís pagar.';
+
+  if (Object.keys(ERR).length) {
+    pintar();
+    const p = document.querySelector('.err');
+    if (p) p.scrollIntoView({ block:'center', behavior:'smooth' });
+    return;
+  }
+
+  GUARDANDO = true; pintar();
+  try {
+    const r = await api('tandaGuardarDatos', {
+      t: TOKEN,
+      nombre: PEDIDO.nombre, telefono: PEDIDO.telefono || '', email: PEDIDO.email || '',
+      entrega: op.entrega, zona: op.zona || '',
+      direccion: PEDIDO.direccion || '', barrio: PEDIDO.barrio || '',
+      referencias: PEDIDO.referencias || '', franja: PEDIDO.franja || '',
+      cp: PEDIDO.cp || '', localidad: PEDIDO.localidad || '', provincia: PEDIDO.provincia || '',
+      envioCosto: op.precio === null ? '' : op.precio,
+      envioPorCotizar: op.precio === null ? 'si' : '',
+      medioPago: PEDIDO.medioPago
+    });
+    GUARDANDO = false;
+    if (!r || !r.ok) { avisar((r && r.error) || 'No pudimos guardar. Probá de nuevo.', true);
+                       pintar(); return; }
+    PEDIDO.datosCompletos = true;
+    PASO = 'confirmado';
+    pintar();
+    window.scrollTo({ top:0, behavior:'smooth' });
+  } catch (e) {
+    GUARDANDO = false;
+    avisar('No pudimos guardar. Fijate que tengas internet.', true);
+    pintar();
+  }
+}
+
+
+// ---------- la confirmación ----------
+function pantallaConfirmada() {
+  const op = opcionActual();
+  const nombre = String(PEDIDO.nombre || '').trim().split(' ')[0];
+  const envio = PEDIDO.envioPorCotizar ? null : (Number(PEDIDO.envioCosto) || 0);
+  return `
+  <div class="saludo"><h2>¡Listo${nombre ? ', ' + esc(nombre) : ''}! ${CORAZON}</h2>
+    <p class="intro">Guardamos tus datos correctamente.</p>
+    <p class="intro2">Tus prendas siguen reservadas en Ainhoa.</p></div>
+  <div class="card">
+    <div class="lista-datos">
+      <div><span>Prendas</span>${ITEMS.length} prenda${ITEMS.length === 1 ? '' : 's'}</div>
+      <div><span>Entrega</span>${esc(op ? op.titulo : PEDIDO.entrega)}</div>
+      ${PEDIDO.direccion ? `<div><span>Dirección</span>${esc(PEDIDO.direccion)}</div>` : ''}
+      <div><span>Pago</span>${esc(PEDIDO.medioPago)}</div>
+      <div><span>A pagar</span><b class="plata">${plata(totalAinhoa())}</b> a Ainhoa</div>
+      ${envio ? `<div><span>Envío</span><b class="plata">${plata(envio)}</b>
+        a ${esc(CFG.cadete || 'el cadete')}</div>`
+        : (PEDIDO.envioPorCotizar ? `<div><span>Envío</span>a cotizar</div>` : '')}
+    </div>
+    ${proximoPaso()}
+    <button class="btn-ver" onclick="PASO='guardado';pintar()">Ver mi pedido</button>
+  </div>`;
+}
+
+arrancar();
+</script>
+</body>
+</html>

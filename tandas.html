@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tandas · Ainhoa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* ============================================================
+   LA PANTALLA DEL EQUIPO
+   Venta Rapida, Pedidos, Reservas, Laurita y Marcelo.
+   Pide contrasena. La clienta NO entra aca: ella abre mipedido.html
+   ============================================================ */
+:root{
+  --papel:#FAF8F4; --tarjeta:#FFFFFF; --linea:#E3DCD0; --linea2:#F0EBE2;
+  --tinta:#211E1A; --tenue:#847C71; --bronce:#6B5D3F; --barra:#1C1A17;
+  --ok:#2F6B46; --ok-bg:#EDF5F0; --alerta:#8E6A28; --alerta-bg:#FAF3E3;
+  --mal:#9E3F32; --mal-bg:#FAEFED; --info:#3B5A6B; --info-bg:#EEF3F6;
+  --display:"Cormorant Garamond",Georgia,serif;
+  --texto:"Inter",-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--papel);color:var(--tinta);font-family:var(--texto);
+  font-size:13px;line-height:1.5;-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);
+  z-index:40;background:var(--barra)}
+.wrap{max-width:720px;margin:0 auto;padding-bottom:60px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px))}
+h2,h3{margin:0;text-wrap:balance}
+button{font-family:inherit;font-size:13px;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:16px;width:100%;padding:11px 12px;
+  border:1px solid var(--linea);border-radius:9px;background:var(--tarjeta);color:var(--tinta)}
+input:focus,select:focus{outline:2px solid var(--bronce);outline-offset:1px}
+label{display:block;font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--tenue);margin:0 0 5px;font-weight:600}
+.f{margin-bottom:13px}
+
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--barra);
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px))}
+.topin{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:10px;
+  padding-block:9px;flex-wrap:wrap}
+.marca{font-family:var(--display);font-size:17px;letter-spacing:.2em;color:#F7F4EF;font-weight:300}
+.salir{margin-left:auto;background:transparent;border:1px solid #4A443B;color:#CFC7BA;
+  border-radius:20px;padding:5px 12px;font-size:11.5px}
+
+.pagehead{padding-block:14px 8px}
+.pagehead h2{font-size:17px;font-weight:600;letter-spacing:-.01em}
+.pagehead p{margin:3px 0 0;color:var(--tenue);font-size:12px}
+
+.card{background:var(--tarjeta);border:1px solid var(--linea);border-radius:9px;
+  padding:12px 13px;margin-bottom:8px}
+.card.aviso{border-left:2px solid var(--alerta)}
+.card.malo{border-left:2px solid var(--mal)}
+.card.listo{border-left:2px solid var(--ok)}
+
+.btn{background:var(--tinta);color:var(--papel);border:1px solid var(--tinta);
+  border-radius:9px;padding:10px 14px;font-weight:600;letter-spacing:.02em}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.sec{background:transparent;color:var(--tinta);border-color:var(--linea)}
+.btn.bro{background:var(--bronce);border-color:var(--bronce);color:#fff}
+.btn.big{width:100%;padding:13px;font-size:15px}
+.btn.sm{padding:7px 11px;font-size:12px;border-radius:7px;font-weight:500}
+.row{display:flex;gap:7px;flex-wrap:wrap}
+.row>.btn{flex:1;min-width:110px}
+
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:20px;border:1px solid}
+.c-ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok)}
+.c-al{background:var(--alerta-bg);color:var(--alerta);border-color:var(--alerta)}
+.c-mal{background:var(--mal-bg);color:var(--mal);border-color:var(--mal)}
+.c-inf{background:var(--info-bg);color:var(--info);border-color:var(--info)}
+.c-gr{background:transparent;color:var(--tenue);border-color:var(--linea)}
+.chips{display:flex;gap:4px;flex-wrap:wrap;margin:5px 0 0}
+
+.cod{font-family:ui-monospace,Menlo,monospace;font-weight:600;letter-spacing:.02em}
+.plata{font-variant-numeric:tabular-nums;font-weight:600}
+.big-num{font-size:18px;font-weight:700;letter-spacing:-.025em;font-variant-numeric:tabular-nums}
+.mini{font-size:11px;color:var(--tenue)}
+hr{border:0;border-top:1px solid var(--linea2);margin:11px 0}
+
+.item{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
+  padding:7px 0;border-bottom:1px solid var(--linea2)}
+.item:last-child{border-bottom:0}
+.item .l{min-width:0;flex:1}
+.item .r{text-align:right;white-space:nowrap}
+
+.filtros{display:flex;gap:5px;overflow-x:auto;padding-block:3px 11px;margin-bottom:3px}
+.filtros button{white-space:nowrap;background:var(--tarjeta);border:1px solid var(--linea);
+  color:var(--tinta);border-radius:20px;padding:6px 12px;font-size:12px}
+.filtros button[aria-pressed="true"]{background:var(--tinta);color:var(--papel);
+  border-color:var(--tinta);font-weight:600}
+
+.sello{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tenue);
+  margin:18px 0 7px;padding-bottom:5px;border-bottom:1.5px solid var(--linea);font-weight:700}
+.vacio{text-align:center;color:var(--tenue);padding:32px 16px;font-size:13px}
+.proto{background:var(--info-bg);border:1px solid var(--info);color:var(--info);
+  border-radius:9px;padding:9px 12px;font-size:12px;margin-block:9px}
+details summary{cursor:pointer;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--tenue);font-weight:600}
+
+.entrar{max-width:360px;margin:0 auto;padding-top:14vh}
+.entrar .logo{text-align:center;font-family:var(--display);font-size:26px;
+  letter-spacing:.3em;font-weight:300;margin-bottom:6px;padding-left:.3em}
+.entrar .sub{text-align:center;color:var(--tenue);font-size:12.5px;margin-bottom:26px}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--tinta);
+  color:var(--papel);padding:12px 18px;border-radius:10px;font-size:13px;z-index:60;
+  max-width:min(92vw,420px);box-shadow:0 6px 24px rgba(0,0,0,.2)}
+.toast.err{background:var(--mal)}
+.cargando{text-align:center;color:var(--tenue);padding:40px 16px;font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="topbar" id="topbar" style="display:none"><div class="topin">
+  <span class="marca">AINHOA</span>
+  <span class="mini" id="tandaNombre" style="color:#9A9287"></span>
+  <button class="salir" onclick="salir()">Salir</button>
+</div></div>
+
+<div class="wrap" id="app"></div>
+<div id="toast"></div>
+
+<script>
+// ============================================================
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyZbEeODB-LF71H32WLSJafEKpl4sQNzMEiNQ2nvxK6LjNc1pmX0NMEbKSi5s7EXk9d/exec';
+// ============================================================
+
+// El token de sesion vive solo en memoria: si recargas, entras de nuevo.
+let sesion = '';
+let VISTA = 'venta', FILTRO = 'todos', PEDIDOS = [], CFG = null, TANDA = '';
+let ULTIMO = null, ENLACE = null, buscada = null, cargando = false;
+
+async function api(action, params = {}) {
+  const url = new URL(APPS_SCRIPT_URL);
+  url.searchParams.set('action', action);
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null) url.searchParams.set(k, v);
+  });
+  if (sesion) url.searchParams.set('token', sesion);
+  url.searchParams.set('_', Date.now() + '' + Math.floor(Math.random() * 1000));
+  const res = await fetch(url.toString(), { cache: 'no-store' });
+  const data = await res.json();
+  if (data && data.ok === false && data.error === 'No autorizado.') sesionVencida();
+  return data;
+}
+
+let avisando = false;
+function sesionVencida() {
+  if (avisando) return;
+  avisando = true;
+  sesion = '';
+  alert('Tu sesión venció por seguridad. Entrá de nuevo.');
+  location.reload();
+}
+
+const $ = id => document.getElementById(id);
+const plata = n => '$' + String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+  ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+let toastT;
+function avisar(msg, mal) {
+  $('toast').innerHTML = '<div class="toast' + (mal ? ' err' : '') + '">' + esc(msg) + '</div>';
+  clearTimeout(toastT);
+  toastT = setTimeout(() => { $('toast').innerHTML = ''; }, 3400);
+}
+
+
+// ============================================================
+// ENTRAR
+// ============================================================
+function pantallaEntrar(error) {
+  $('topbar').style.display = 'none';
+  $('app').innerHTML = `<div class="entrar">
+    <div class="logo">AINHOA</div>
+    <div class="sub">Tandas · Venta rápida y pedidos</div>
+    <div class="f"><label for="pass">Contraseña</label>
+      <input id="pass" type="password" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter')entrar()"></div>
+    ${error ? `<p style="color:var(--mal);font-size:12.5px;margin:0 0 12px">${esc(error)}</p>` : ''}
+    <button class="btn big" id="btnEntrar" onclick="entrar()">Entrar</button>
+  </div>`;
+  setTimeout(() => { const p = $('pass'); if (p) p.focus(); }, 60);
+}
+
+async function entrar() {
+  const pass = ($('pass') || {}).value || '';
+  if (!pass) return;
+  $('btnEntrar').disabled = true;
+  $('btnEntrar').textContent = 'Entrando…';
+  try {
+    const r = await api('checkAdminPass', { pass: pass });
+    if (!r || !r.ok) return pantallaEntrar((r && r.error) || 'Contraseña incorrecta.');
+    sesion = r.token || '';
+    $('topbar').style.display = '';
+    await recargar();
+  } catch (e) {
+    pantallaEntrar('No pudimos conectarnos. Fijate que tengas internet.');
+  }
+}
+
+function salir() { sesion = ''; location.reload(); }
+
+
+// ============================================================
+// CARGAR
+// ============================================================
+async function recargar() {
+  cargando = true; pintar();
+  try {
+    const [p, c] = await Promise.all([api('tandaPedidos'), api('tandaConfig')]);
+    PEDIDOS = (p && p.ok) ? p.pedidos : [];
+    CFG = (c && c.ok) ? c.config : null;
+    TANDA = (p && p.tanda) || (CFG && CFG.tandaActual) || '';
+    $('tandaNombre').textContent = TANDA;
+  } catch (e) {
+    avisar('No pude cargar los pedidos.', true);
+  }
+  cargando = false; pintar();
+}
+
+
+// ============================================================
+// PINTAR
+// ============================================================
+const NOMBRES = { venta:'Venta rápida', pedidos:'Pedidos', reservas:'Reservas',
+                  prep:'Preparar', entregas:'Entregas' };
+
+function pintar() {
+  if (!sesion) return;
+  const nav = `<div class="filtros" style="margin-top:12px">${
+    Object.keys(NOMBRES).map(v =>
+      `<button aria-pressed="${VISTA === v}" onclick="VISTA='${v}';pintar()">${NOMBRES[v]}</button>`
+    ).join('')}</div>`;
+  const cuerpo = cargando ? '<div class="cargando">Cargando…</div>' : (VISTAS[VISTA] || (() => ''))();
+  $('app').innerHTML = nav + cuerpo;
+}
+
+
+// ---------- VENTA RÁPIDA ----------
+function vistaVenta() {
+  const ult = ULTIMO;
+  return `
+  <div class="pagehead"><h2>Venta rápida</h2>
+    <p>${esc(TANDA)} · reservá mientras corre la tanda</p></div>
+
+  ${ult ? `<div class="card listo">
+    <div class="item" style="border:0;padding:0 0 6px">
+      <div class="l"><strong>Recién reservado · #${ult.numero} ${esc(ult.instagram)}</strong>
+        <div class="mini">${ult.prendas} prenda${ult.prendas === 1 ? '' : 's'}</div></div>
+    </div>
+    <div class="mini" style="margin-bottom:7px">Copiá el mensaje y pegalo en su chat de
+      Instagram antes de pasar a la próxima clienta.</div>
+    <div class="row">
+      <button class="btn sm bro" onclick="copiarMensaje('${ult.token}','${esc(ult.instagram)}')">Copiar el mensaje</button>
+      <button class="btn sm sec" onclick="copiar(enlaceDe('${ult.token}'),'Enlace copiado')">Solo el enlace</button>
+      <button class="btn sm sec" onclick="ULTIMO=null;pintar()">Listo</button>
+    </div></div>` : ''}
+
+  <div class="card">
+    <div class="f"><label for="cod">Código de la prenda</label>
+      <input id="cod" placeholder="107-07-11" autocomplete="off" autocapitalize="off"
+             onkeydown="if(event.key==='Enter')buscarPrenda()"></div>
+    <div id="hallazgo"></div>
+    <div class="f"><label for="ig">Usuario de Instagram</label>
+      <input id="ig" placeholder="@maria" autocomplete="off" autocapitalize="off"
+             onkeydown="if(event.key==='Enter')accionReservar()"></div>
+    <div class="row">
+      <button class="btn sec" onclick="buscarPrenda()">Buscar</button>
+      <button class="btn bro" id="btnRes" onclick="accionReservar()">Reservar</button>
+    </div>
+    <p class="mini" style="margin:9px 0 0">Reservar no vende ni cobra. La prenda queda
+      fuera de circulación y los datos de pago y envío quedan pendientes.</p>
+  </div>`;
+}
+
+async function buscarPrenda() {
+  const v = ($('cod') || {}).value || '';
+  if (!v.trim()) return;
+  $('hallazgo').innerHTML = '<div class="cargando">Buscando…</div>';
+  const r = await api('tandaBuscarPrenda', { codigo: v.trim() });
+  buscada = r && r.ok ? r : null;
+  if (!r || !r.ok) {
+    $('hallazgo').innerHTML = `<div class="card malo" style="margin-bottom:13px">
+      ${esc((r && r.error) || 'No encontré esa prenda.')}</div>`;
+    return;
+  }
+  $('hallazgo').innerHTML = `<div class="card listo" style="margin-bottom:13px">
+    <div class="item" style="border:0;padding:0">
+      <div class="l"><span class="cod">${esc(r.codigo)}</span>
+        <div style="font-weight:600;margin-top:2px">${esc(r.descripcion)}</div>
+        <div class="mini">${esc(r.marca)}${r.marca ? ' · ' : ''}talle ${esc(r.talle)}</div>
+        <div class="chips"><span class="chip c-ok">disponible</span></div></div>
+      <div class="r"><div class="big-num">${plata(r.transferencia)}</div>
+        <div class="mini">transferencia</div>
+        <div class="plata" style="margin-top:4px">${plata(r.efectivo)}</div>
+        <div class="mini">efectivo</div></div>
+    </div></div>`;
+}
+
+async function accionReservar() {
+  const cod = ($('cod') || {}).value.trim();
+  const ig = ($('ig') || {}).value.trim().replace(/^@/, '');
+  if (!cod) return avisar('Falta el código.', true);
+  if (!ig) return avisar('Falta el usuario de Instagram.', true);
+  const b = $('btnRes'); b.disabled = true; b.textContent = 'Reservando…';
+  const r = await api('tandaReservarPrenda', { codigo: cod, instagram: ig });
+  b.disabled = false; b.textContent = 'Reservar';
+  if (!r || !r.ok) return avisar((r && r.error) || 'No pude reservar.', true);
+  avisar(r.creado ? `Pedido #${r.numero} creado con ${r.codigo}`
+                  : `${r.codigo} sumada al pedido #${r.numero}`);
+  if (r.aviso) avisar(r.aviso, true);
+  await recargar();
+  const ped = PEDIDOS.find(p => p.pedidoId === r.pedidoId);
+  ULTIMO = { numero: r.numero, instagram: ig, token: r.token,
+             prendas: ped ? ped.items.length : 1 };
+  buscada = null;
+  pintar();
+}
+
+
+// ---------- PEDIDOS ----------
+const FILTROS = {
+  todos:       ['Todos', () => true],
+  datos:       ['Datos pendientes', p => !p.datosCompletos],
+  comprobante: ['Esperando pago', p => p.estadoCobro === 'pendiente'],
+  efvoRetiro:  ['Efectivo al retirar', p => p.estadoCobro === 'efectivo al retirar'],
+  efvoEntrega: ['Efectivo contra entrega', p => p.estadoCobro === 'efectivo contra entrega'],
+  cotizar:     ['Envío por cotizar', p => p.envioPorCotizar],
+  paraPrep:    ['Listos para preparar', p => p.estadoPreparacion === 'pendiente' && p.datosCompletos],
+  preparados:  ['Preparados', p => p.estadoPreparacion === 'preparado'],
+  revision:    ['Necesitan revisión', p => p.estadoPreparacion === 'revision necesaria'],
+  entregados:  ['Entregados', p => p.estadoEntrega === 'entregada']
+};
+
+function vistaPedidos() {
+  const lista = PEDIDOS.filter(FILTROS[FILTRO][1]);
+  const link = PEDIDOS.filter(p => p.medioPago === 'Mercado Pago o tarjeta' &&
+                                   p.estadoCobro === 'pendiente');
+  return `
+  <div class="pagehead"><h2>Pedidos de la tanda</h2>
+    <p>${PEDIDOS.length} pedido${PEDIDOS.length === 1 ? '' : 's'} · ${esc(TANDA)}</p></div>
+  ${link.length ? `<div class="card malo">
+    <strong>${link.length} clienta${link.length === 1 ? '' : 's'} espera${link.length === 1 ? '' : 'n'} el link de pago</strong>
+    ${link.map(p => `<div class="mini">#${p.numero} · ${esc(p.instagram)} · ${plata(p.aAinhoa)}</div>`).join('')}
+    <div class="mini" style="margin-top:5px">Mandáselo por el chat de Instagram.</div></div>` : ''}
+  <div class="filtros">${Object.keys(FILTROS).map(k =>
+    `<button aria-pressed="${FILTRO === k}" onclick="FILTRO='${k}';pintar()">${FILTROS[k][0]}</button>`
+  ).join('')}</div>
+  ${lista.length ? lista.map(tarjetaPedido).join('') : '<div class="vacio">Nada con ese filtro.</div>'}`;
+}
+
+function chipsEstado(p) {
+  const c = [];
+  c.push(`<span class="chip ${p.estadoVenta === 'registrada' ? 'c-ok' : 'c-gr'}">venta: ${esc(p.estadoVenta)}</span>`);
+  const cc = p.estadoCobro === 'confirmado' ? 'c-ok' : p.estadoCobro === 'sin elegir' ? 'c-gr' : 'c-al';
+  c.push(`<span class="chip ${cc}">cobro: ${esc(p.estadoCobro)}</span>`);
+  const cp = p.estadoPreparacion === 'preparado' ? 'c-ok'
+           : p.estadoPreparacion === 'revision necesaria' ? 'c-mal' : 'c-gr';
+  c.push(`<span class="chip ${cp}">prep: ${esc(p.estadoPreparacion)}</span>`);
+  if (p.estadoEntrega !== 'pendiente')
+    c.push(`<span class="chip ${p.estadoEntrega === 'entregada' ? 'c-ok' : 'c-inf'}">entrega: ${esc(p.estadoEntrega)}</span>`);
+  if (p.descuento) c.push(`<span class="chip c-inf">descuento</span>`);
+  if (!p.datosCompletos) c.push('<span class="chip c-al">faltan datos</span>');
+  if (p.envioPorCotizar) c.push('<span class="chip c-al">envío por cotizar</span>');
+  return `<div class="chips">${c.join('')}</div>`;
+}
+
+function tarjetaPedido(p) {
+  return `<div class="card ${p.observaciones ? 'malo' : ''}">
+    <div class="item" style="border:0;padding:0 0 5px">
+      <div class="l"><strong>#${p.numero} · ${esc(p.instagram)}</strong>
+        <div class="mini">${p.items.length} prenda${p.items.length === 1 ? '' : 's'} ·
+          ${esc(p.entrega || 'entrega sin elegir')}${p.nombre ? ' · ' + esc(p.nombre) : ''}</div></div>
+      <div class="r"><div class="big-num">${plata(p.aAinhoa)}</div>
+        ${p.envio ? `<div class="mini">+ ${plata(p.envio)} envío</div>` : ''}</div>
+    </div>
+    ${chipsEstado(p)}
+    ${p.observaciones ? `<div class="proto" style="background:var(--mal-bg);border-color:var(--mal);color:var(--mal)">
+      ${esc(p.observaciones)}</div>` : ''}
+    <div class="row" style="margin:8px 0">
+      <button class="btn sm ${ENLACE === p.pedidoId ? '' : 'bro'}"
+        onclick="ENLACE = ENLACE==='${p.pedidoId}' ? null : '${p.pedidoId}'; pintar()">${
+        ENLACE === p.pedidoId ? 'Ocultar el enlace' : 'Su enlace'}</button>
+    </div>
+    ${ENLACE === p.pedidoId ? cajaEnlace(p) : ''}
+    <details><summary>Ver prendas y acciones</summary>
+      <div style="margin-top:9px">
+        ${p.items.map(i => `<div class="item">
+          <div class="l"><span class="cod">${esc(i.codigo)}</span></div>
+          <div class="r plata">${plata(i.precio)}</div></div>`).join('')}
+        ${p.descuento ? `<div class="item"><div class="l">Descuento</div>
+          <div class="r plata" style="color:var(--ok)">− ${plata(p.descuento)}</div></div>` : ''}
+        <hr>
+        <div class="f" style="margin-bottom:9px"><label for="d-${p.pedidoId}">Descuento sobre las prendas</label>
+          <div class="row"><input id="d-${p.pedidoId}" type="number" min="0" max="100"
+            inputmode="numeric" value="0" style="flex:2;min-width:90px">
+          <button class="btn sm" onclick="ponerDescuento('${p.pedidoId}')">Aplicar %</button></div></div>
+        <div class="row">
+          <button class="btn sm sec" onclick="verPedido('${p.token}')">Ver como lo ve ella</button>
+        </div>
+      </div>
+    </details></div>`;
+}
+
+// El link que se le manda a la clienta. Sale de la direccion de esta
+// misma pagina, asi que no hay que escribir ninguna direccion a mano:
+// si manana cambia el dominio, el link cambia solo.
+const enlaceDe = tok =>
+  location.origin + location.pathname.replace(/[^/]*$/, '') + 'mipedido.html?t=' + tok;
+
+function mensajeDe(tok, ig) {
+  return '¡Hola ' + ig + '! ♡ Te dejo el link con tus prendas de la tanda para que '
+       + 'completes tus datos de envío o retiro:\n' + enlaceDe(tok)
+       + '\nTe quedan reservadas por 48 horas.';
+}
+
+function cajaEnlace(p) {
+  return `<div class="card" style="margin:0 0 8px;border-color:var(--bronce)">
+    <strong>El enlace de ${esc(p.instagram)}</strong>
+    <div class="mini" style="margin:3px 0 9px">Es siempre el mismo para esta tanda.
+      Si le sumás otra prenda, ella la ve en este mismo link.</div>
+    <input readonly value="${esc(enlaceDe(p.token))}" onclick="this.select()" style="font-size:12px">
+    <div class="row" style="margin-top:8px">
+      <button class="btn sm bro" onclick="copiarMensaje('${p.token}','${esc(p.instagram)}')">Copiar el mensaje</button>
+      <button class="btn sm sec" onclick="copiar(enlaceDe('${p.token}'),'Enlace copiado')">Copiar el enlace</button>
+    </div></div>`;
+}
+
+function verPedido(tok) { window.open(enlaceDe(tok), '_blank'); }
+function copiarMensaje(tok, ig) { copiar(mensajeDe(tok, ig), 'Mensaje copiado, pegalo en Instagram'); }
+
+function copiar(txt, ok) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(() => avisar(ok), () => copiarAMano(txt, ok));
+  } else copiarAMano(txt, ok);
+}
+function copiarAMano(txt, ok) {
+  const t = document.createElement('textarea');
+  t.value = txt; t.style.position = 'fixed'; t.style.opacity = '0';
+  document.body.appendChild(t); t.select();
+  try { document.execCommand('copy'); avisar(ok); }
+  catch (e) { avisar('No pude copiar solo. Tocá el enlace y copialo a mano.', true); }
+  document.body.removeChild(t);
+}
+
+async function ponerDescuento(id) {
+  const v = Number(($('d-' + id) || {}).value) || 0;
+  const r = await api('tandaDescuentoPedido', { pedidoId: id, porcentaje: v });
+  if (!r || !r.ok) return avisar((r && r.error) || 'No pude aplicar el descuento.', true);
+  avisar(v ? ('Descuento del ' + v + '% aplicado') : 'Descuento sacado');
+  await recargar();
+}
+
+
+// ---------- RESERVAS ----------
+function vistaReservas() {
+  const conPrendas = PEDIDOS.filter(p => p.items.length);
+  return `<div class="pagehead"><h2>Reservas</h2>
+    <p>Liberar deja la prenda disponible otra vez</p></div>
+  ${conPrendas.length ? conPrendas.map(p => `<div class="card">
+    <strong>#${p.numero} · ${esc(p.instagram)}</strong>
+    <div class="mini">${p.items.length} prenda${p.items.length === 1 ? '' : 's'}</div>
+    <div style="margin-top:7px">
+      ${p.items.map(i => `<div class="item">
+        <div class="l"><span class="cod">${esc(i.codigo)}</span></div>
+        <div class="r"><span class="plata" style="margin-right:8px">${plata(i.precio)}</span>
+          <button class="btn sm sec" onclick="liberar('${esc(i.codigo)}')">Liberar</button></div>
+      </div>`).join('')}
+    </div></div>`).join('') : '<div class="vacio">No hay nada reservado.</div>'}`;
+}
+
+async function liberar(cod) {
+  const r = await api('tandaLiberarPrenda', { codigo: cod, motivo: 'liberada a mano' });
+  if (!r || !r.ok) return avisar((r && r.error) || 'No pude liberar.', true);
+  avisar(cod + ' liberada');
+  await recargar();
+}
+
+
+// ---------- LAURITA ----------
+function vistaPrep() {
+  const grupos = [
+    ['Para preparar', PEDIDOS.filter(p => p.estadoPreparacion === 'pendiente')],
+    ['Preparando', PEDIDOS.filter(p => p.estadoPreparacion === 'preparando')],
+    ['Necesitan revisión', PEDIDOS.filter(p => p.estadoPreparacion === 'revision necesaria')],
+    ['Listos', PEDIDOS.filter(p => p.estadoPreparacion === 'preparado')]
+  ];
+  return `<div class="pagehead"><h2>Preparar pedidos</h2>
+    <p>${esc(TANDA)}</p></div>
+  ${grupos.map(([t, l]) => !l.length ? '' : `<div class="sello">${t} · ${l.length}</div>
+    ${l.map(p => `<div class="card ${p.estadoPreparacion === 'revision necesaria' ? 'malo'
+      : p.estadoPreparacion === 'preparado' ? 'listo' : ''}">
+      <strong style="font-size:15px">#${p.numero} · ${esc(p.nombre || p.instagram)}</strong>
+      <div class="mini">${p.items.length} prenda${p.items.length === 1 ? '' : 's'} ·
+        ${esc(p.entrega || 'entrega sin definir')}</div>
+      ${p.estadoCobro === 'efectivo contra entrega'
+        ? '<div class="chips"><span class="chip c-al">cobra el cadete al entregar</span></div>' : ''}
+      ${p.observaciones ? `<div class="proto" style="background:var(--mal-bg);border-color:var(--mal);color:var(--mal)">
+        ${esc(p.observaciones)}</div>` : ''}
+      <div style="margin:9px 0">
+        ${p.items.map(i => `<div class="item">
+          <div class="l"><span class="cod" style="font-size:16px">${esc(i.codigo)}</span></div>
+        </div>`).join('')}
+      </div>
+      <div class="row">
+        ${p.estadoPreparacion === 'pendiente'
+          ? `<button class="btn sm bro" onclick="prep('${p.pedidoId}','preparando')">Empezar a preparar</button>` : ''}
+        ${p.estadoPreparacion !== 'preparado'
+          ? `<button class="btn sm" onclick="prep('${p.pedidoId}','preparado')">Pedido preparado</button>` : ''}
+        <button class="btn sm sec" onclick="prep('${p.pedidoId}','revision necesaria')">Informar problema</button>
+      </div></div>`).join('')}`).join('')}
+  ${PEDIDOS.length ? '' : '<div class="vacio">No hay pedidos todavía.</div>'}`;
+}
+
+async function prep(id, estado) {
+  const r = await api('tandaEstadoPreparacion', { pedidoId: id, estado: estado });
+  if (!r || !r.ok) return avisar((r && r.error) || 'No pude cambiarlo.', true);
+  avisar('Marcado como ' + estado);
+  await recargar();
+}
+
+
+// ---------- MARCELO ----------
+function vistaEntregas() {
+  const mios = PEDIDOS.filter(p => p.estadoPreparacion === 'preparado' &&
+                                   p.entrega && p.entrega !== 'Retiro');
+  return `<div class="pagehead"><h2>Entregas</h2>
+    <p>Solo los pedidos preparados que salen con el cadete</p></div>
+  ${mios.length ? mios.map(p => `<div class="card ${p.estadoEntrega === 'entregada' ? 'listo' : ''}">
+    <strong style="font-size:15px">#${p.numero} · ${esc(p.nombre || p.instagram)}</strong>
+    <div class="mini" style="margin-top:3px">${esc(p.direccion || 'sin dirección')}${
+      p.barrio ? ' · ' + esc(p.barrio) : ''}</div>
+    ${p.referencias ? `<div class="mini">Referencia: ${esc(p.referencias)}</div>` : ''}
+    ${p.franja ? `<div class="mini">Horario: ${esc(p.franja)}</div>` : ''}
+    <div class="mini">Teléfono: ${esc(p.telefono || 'no cargado')}</div>
+    <div class="chips">
+      <span class="chip c-gr">${p.items.length} prenda${p.items.length === 1 ? '' : 's'}</span>
+      ${p.estadoCobro === 'efectivo contra entrega'
+        ? `<span class="chip c-al">cobrar ${plata(p.aAinhoa)}</span>`
+        : '<span class="chip c-ok">las prendas ya están pagas</span>'}
+      ${p.envio ? `<span class="chip c-inf">envío ${plata(p.envio)}</span>` : ''}
+      <span class="chip ${p.estadoEntrega === 'entregada' ? 'c-ok' : 'c-inf'}">${esc(p.estadoEntrega)}</span>
+    </div>
+    <div class="row" style="margin-top:9px">
+      ${p.estadoEntrega !== 'en camino' && p.estadoEntrega !== 'entregada'
+        ? `<button class="btn sm bro" onclick="entrega('${p.pedidoId}','en camino')">En camino</button>` : ''}
+      ${p.estadoEntrega !== 'entregada'
+        ? `<button class="btn sm" onclick="entrega('${p.pedidoId}','entregada')">Entregado</button>` : ''}
+      ${p.estadoEntrega !== 'entregada'
+        ? `<button class="btn sm sec" onclick="entrega('${p.pedidoId}','incidencia')">No pude entregar</button>` : ''}
+    </div></div>`).join('') : '<div class="vacio">No hay entregas asignadas.</div>'}`;
+}
+
+async function entrega(id, estado) {
+  const r = await api('tandaEstadoEntrega', { pedidoId: id, estado: estado });
+  if (!r || !r.ok) return avisar((r && r.error) || 'No pude cambiarlo.', true);
+  avisar('Marcado como ' + estado);
+  await recargar();
+}
+
+
+const VISTAS = { venta:vistaVenta, pedidos:vistaPedidos, reservas:vistaReservas,
+                 prep:vistaPrep, entregas:vistaEntregas };
+
+pantallaEntrar();
+</script>
+</body>
+</html>
