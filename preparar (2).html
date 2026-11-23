@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Preparar · Ainhoa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --papel:#FAF9F6; --tarjeta:#FFFFFF; --suave:#F3F2EF;
+  --tinta:#15130F; --medio:#565250; --tenue:#8C8884;
+  --linea:#E8E5E0; --borde:#D2CEC8;
+  /* cada estado con su color: base clarita, borde y letra mas oscuros */
+  --verde:#3F6B4C; --verde-bg:#EBF3ED; --verde-bd:#A9C7B2;
+  --azul:#3C5E77;  --azul-bg:#EAF0F5;  --azul-bd:#A7BECE;
+  --ambar:#8A6420; --ambar-bg:#F9F1E2; --ambar-bd:#D9C293;
+  --alerta:#9C382D; --rojo-bg:#F9EDEB; --rojo-bd:#D6AEA8;
+  --display:'Cormorant Garamond',Georgia,serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--papel);color:var(--tinta);
+  font-family:Inter,system-ui,sans-serif;font-size:16px;line-height:1.6;
+  padding-bottom:calc(48px + env(safe-area-inset-bottom))}
+.wrap{max-width:640px;margin:0 auto;padding:0 18px}
+
+/* ---------- encabezado ---------- */
+.topbar{position:sticky;top:0;z-index:20;background:var(--tinta);color:#fff;
+  padding:16px 18px calc(16px) ;text-align:center}
+.topbar .marca{font-family:var(--display);font-size:26px;letter-spacing:.3em;
+  margin-left:.3em;line-height:1}
+.salir{position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  background:transparent;border:1px solid rgba(255,255,255,.35);color:#fff;
+  border-radius:999px;padding:6px 14px;font-size:13px;font-family:inherit;cursor:pointer}
+
+.pagehead{padding:26px 0 14px}
+.pagehead h2{margin:0;font-size:21px;font-weight:600;letter-spacing:-.01em}
+.pagehead p{margin:5px 0 0;color:var(--tenue);font-size:14px}
+
+/* ---------- filtros ---------- */
+.grupo{margin-bottom:14px}
+.grupo .lab{font-size:12px;color:var(--tenue);text-transform:uppercase;
+  letter-spacing:.09em;margin-bottom:8px}
+.filtros{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none}
+.filtros::-webkit-scrollbar{display:none}
+.filtros button{white-space:nowrap;border:1px solid var(--borde);background:var(--tarjeta);
+  color:var(--medio);border-radius:999px;padding:10px 17px;font-size:14.5px;
+  font-family:inherit;cursor:pointer;min-height:42px}
+.filtros button[aria-pressed="true"]{background:var(--tinta);border-color:var(--tinta);
+  color:#fff;font-weight:600}
+
+/* ---------- tarjeta ---------- */
+.card{background:var(--tarjeta);border:1px solid var(--linea);border-radius:14px;
+  padding:20px;margin-bottom:14px}
+.card.pri{border-color:var(--tinta);border-width:2px;padding:19px}
+.card.hecho{background:var(--suave);border-color:var(--linea)}
+.card.hecho .nom{color:var(--medio)}
+
+.nom{font-weight:650;font-size:18.5px;line-height:1.3;word-break:break-word}
+.sub{color:var(--tenue);font-size:14px;margin-top:3px}
+
+.etis{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.eti{font-size:13px;padding:5px 12px;border-radius:999px;font-weight:600;
+  border:1px solid var(--borde);color:var(--medio);background:var(--suave)}
+.eti.verde{background:var(--verde-bg);border-color:var(--verde-bd);color:var(--verde)}
+.eti.azul {background:var(--azul-bg); border-color:var(--azul-bd); color:var(--azul)}
+.eti.ambar{background:var(--ambar-bg);border-color:var(--ambar-bd);color:var(--ambar)}
+.eti.rojo {background:var(--rojo-bg); border-color:var(--rojo-bd); color:var(--alerta)}
+
+/* ---------- cobro ---------- */
+.cobro{margin-top:14px;border:1px solid var(--tinta);border-radius:10px;
+  padding:13px 15px;font-size:15.5px}
+.cobro .plata{font-weight:700;font-size:19px;letter-spacing:-.01em}
+.cobro .det{color:var(--medio);font-size:13.5px;margin-top:3px}
+.cobro.listo{border-color:var(--linea);color:var(--tenue);background:var(--suave)}
+.cobro{background:var(--tarjeta)}
+.cobro.listo .plata{font-weight:600;font-size:15.5px;color:var(--medio)}
+
+/* ---------- prendas ---------- */
+.prendas{margin-top:16px;border-top:1px solid var(--linea)}
+.pr{display:flex;gap:14px;align-items:flex-start;padding:14px 0;
+  border-bottom:1px solid var(--linea);cursor:pointer;min-height:56px}
+.pr:last-child{border-bottom:0;padding-bottom:4px}
+.tick{flex:0 0 26px;width:26px;height:26px;border:1.5px solid var(--borde);
+  border-radius:7px;display:flex;align-items:center;justify-content:center;
+  font-size:15px;color:transparent;margin-top:2px;background:var(--tarjeta)}
+.pr.listo .tick{background:var(--tinta);border-color:var(--tinta);color:#fff}
+.pr.listo .desc{text-decoration:line-through;color:var(--tenue)}
+.pr.listo .cod{color:var(--tenue)}
+.cod{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;
+  font-weight:600;letter-spacing:.01em}
+.talle{color:var(--tenue);font-size:13.5px;font-weight:400}
+.desc{font-size:15px;line-height:1.45;margin-top:2px}
+.txt{flex:1;min-width:0}
+
+/* ---------- datos de entrega (solo lectura) ---------- */
+.entrega{margin-top:15px;padding-top:14px;border-top:1px solid var(--linea);
+  font-size:14.5px;line-height:1.55}
+.entrega .falta{color:var(--alerta)}
+
+/* ---------- botones ---------- */
+.row{display:flex;gap:9px;flex-wrap:wrap;margin-top:17px}
+.btn{flex:1;min-width:86px;border:1.5px solid var(--borde);background:var(--tarjeta);
+  color:var(--tinta);border-radius:10px;padding:14px 8px;font-size:14.5px;
+  font-weight:600;font-family:inherit;cursor:pointer;min-height:52px;
+  transition:background .12s,color .12s}
+.btn:active{transform:translateY(1px)}
+.btn.ancho{width:100%;flex:none}
+.btn[disabled]{opacity:.6;cursor:default}
+
+/* sin apretar: base clarita con el borde mas oscuro */
+.btn.b-verde{background:var(--verde-bg);border-color:var(--verde-bd);color:var(--verde)}
+.btn.b-rojo {background:var(--rojo-bg); border-color:var(--rojo-bd); color:var(--alerta)}
+.btn.b-ambar{background:var(--ambar-bg);border-color:var(--ambar-bd);color:var(--ambar)}
+/* ya elegido: se colorea entero */
+.btn.b-verde.on{background:var(--verde);border-color:var(--verde);color:#fff}
+.btn.b-rojo.on {background:var(--alerta);border-color:var(--alerta);color:#fff}
+.btn.b-ambar.on{background:var(--ambar);border-color:var(--ambar);color:#fff}
+.btn.espera{background:var(--suave);border-color:var(--borde);color:var(--tenue)}
+.btn.tenue{background:transparent;border-color:var(--borde);color:var(--tenue);
+  font-weight:500;min-height:46px}
+
+.entrar{max-width:340px;margin:0 auto;padding-top:16vh;text-align:center}
+.entrar .logo{font-family:var(--display);font-size:32px;letter-spacing:.3em;
+  margin:0 0 30px .3em}
+.f{text-align:left;margin-bottom:14px}
+.f label{display:block;font-size:13px;color:var(--tenue);margin-bottom:7px}
+.f input{width:100%;border:1px solid var(--borde);border-radius:10px;
+  padding:14px;font-size:16px;font-family:inherit;background:var(--tarjeta);color:var(--tinta)}
+
+.vacio{text-align:center;color:var(--tenue);padding:44px 16px;font-size:15px}
+.cargando{text-align:center;color:var(--tenue);padding:34px;font-size:15px}
+.nota{color:var(--tenue);font-size:13.5px;margin:0 0 20px;line-height:1.5}
+.aviso{position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(22px + env(safe-area-inset-bottom));z-index:60;
+  background:var(--tinta);color:#fff;padding:14px 19px;border-radius:12px;
+  font-size:14.5px;max-width:90vw;box-shadow:0 8px 26px rgba(0,0,0,.22)}
+.aviso.ojo{background:var(--alerta)}
+</style>
+</head>
+<body>
+<div class="topbar" id="topbar" style="display:none">
+  <div class="marca">AINHOA</div>
+  <button class="salir" onclick="salir()">Salir</button>
+</div>
+<div class="wrap"><div id="app"><div class="cargando">Cargando…</div></div></div>
+
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyZbEeODB-LF71H32WLSJafEKpl4sQNzMEiNQ2nvxK6LjNc1pmX0NMEbKSi5s7EXk9d/exec';
+
+let sesion = '';
+let PEDIDOS = [], FECHAS = [], FECHA = '', FILTRO = 'todo';
+const TILDADAS = {};
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const plata = n => '$' + Math.round(Number(n) || 0).toLocaleString('es-AR');
+
+async function api(action, params = {}) {
+  const url = new URL(APPS_SCRIPT_URL);
+  url.searchParams.set('action', action);
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null) url.searchParams.set(k, v);
+  });
+  if (sesion) url.searchParams.set('token', sesion);
+  url.searchParams.set('_', Date.now() + '' + Math.floor(Math.random() * 1000));
+
+  const corte = new AbortController();
+  const reloj = setTimeout(() => corte.abort(), 90000);
+  try {
+    const res = await fetch(url.toString(), { cache: 'no-store', signal: corte.signal });
+    const texto = await res.text();
+    try { return JSON.parse(texto); }
+    catch (e) { return { ok: false, error: 'El servidor contestó algo raro. Avisale a Angie.' }; }
+  } catch (e) {
+    return { ok: false, error: e.name === 'AbortError'
+      ? 'Tardó demasiado. Probá de nuevo.' : 'No pude conectarme.' };
+  } finally { clearTimeout(reloj); }
+}
+
+function avisar(txt, ojo) {
+  const d = document.createElement('div');
+  d.className = 'aviso' + (ojo ? ' ojo' : '');
+  d.textContent = txt;
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), ojo ? 4800 : 2600);
+}
+
+// ---------------- entrar ----------------
+function pantallaEntrar(error) {
+  $('topbar').style.display = 'none';
+  $('app').innerHTML = `<div class="entrar">
+    <div class="logo">AINHOA</div>
+    <div class="f"><label for="pass">Contraseña</label>
+      <input id="pass" type="password" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter')entrar()"></div>
+    ${error ? `<p style="color:var(--alerta);font-size:14px;margin:0 0 14px">${esc(error)}</p>` : ''}
+    <button class="btn lleno ancho" id="btnEntrar" onclick="entrar()">Entrar</button>
+  </div>`;
+  setTimeout(() => { const p = $('pass'); if (p) p.focus(); }, 60);
+}
+
+async function entrar() {
+  const pass = ($('pass') || {}).value || '';
+  if (!pass) return;
+  $('btnEntrar').disabled = true;
+  $('btnEntrar').textContent = 'Entrando…';
+  const r = await api('tandaEntrarPreparar', { pass: pass });
+  if (!r || !r.ok) return pantallaEntrar((r && r.error) || 'Contraseña incorrecta.');
+  sesion = r.token || '';
+  $('topbar').style.display = '';
+  await recargar();
+}
+
+function salir() { sesion = ''; location.reload(); }
+
+// ---------------- cargar ----------------
+async function recargar() {
+  $('app').innerHTML = '<div class="cargando">Cargando pedidos…</div>';
+  const r = await api('tandaPreparar', { fecha: FECHA });
+  if (!r || !r.ok) {
+    if (r && r.error === 'No autorizado.') return pantallaEntrar('Se cerró la sesión. Entrá de nuevo.');
+    $('app').innerHTML = `<div class="vacio">${esc((r && r.error) || 'No pude cargar.')}</div>`;
+    return;
+  }
+  PEDIDOS = r.pedidos || [];
+  FECHAS = r.fechas || FECHAS;
+  pintar();
+}
+
+const esEnvio  = p => String(p.entrega || '').toLowerCase().startsWith('env');
+const esRetiro = p => String(p.entrega || '').toLowerCase().startsWith('ret');
+
+const FILTROS = {
+  todo:    ['Todo',       () => true],
+  envios:  ['Envíos',     esEnvio],
+  retiros: ['Retiros',    esRetiro],
+  falta:   ['Sin armar',  p => p.estado === 'pendiente'],
+  trabado: ['Trabados',   p => p.estado === 'problema' || p.estado === 'pausa']
+};
+
+function pintar() {
+  const lista = PEDIDOS.filter(FILTROS[FILTRO][1]);
+  const sinHacer = PEDIDOS.filter(p => p.estado === 'pendiente').length;
+  const env = PEDIDOS.filter(esEnvio).length;
+
+  $('app').innerHTML = `
+  <div class="pagehead">
+    <h2>Pedidos para preparar</h2>
+    <p>${PEDIDOS.length} clienta${PEDIDOS.length === 1 ? '' : 's'} ·
+       ${sinHacer} sin armar · ${env} ${env === 1 ? 'envío' : 'envíos'}</p>
+  </div>
+
+  <div class="grupo"><div class="lab">Día de la venta</div>
+    <div class="filtros">
+      <button aria-pressed="${!FECHA}" onclick="verFecha('')">Todo lo pendiente</button>
+      ${FECHAS.map(f => `<button aria-pressed="${FECHA === f}"
+        onclick="verFecha('${f}')">${diaCorto(f)}</button>`).join('')}
+    </div></div>
+
+  <div class="grupo"><div class="lab">Mostrar</div>
+    <div class="filtros">${Object.keys(FILTROS).map(k =>
+      `<button aria-pressed="${FILTRO === k}" onclick="FILTRO='${k}';pintar()">${FILTROS[k][0]}</button>`
+    ).join('')}</div></div>
+
+  ${lista.length ? lista.map(tarjeta).join('')
+                 : '<div class="vacio">Nada para mostrar con ese filtro.</div>'}
+
+  ${lista.length ? `<button class="btn ancho" style="margin-top:6px"
+    onclick="copiarEnvios()">Copiar las direcciones de los envíos</button>
+  <p class="nota" style="margin-top:9px">Arma el texto de los envíos para pegar en el
+    grupo. Solo entran las clientas que ya tienen la dirección cargada.</p>` : ''}`;
+}
+
+function diaCorto(f) {
+  const p = String(f).split('-');
+  return p.length === 3 ? p[2] + '/' + p[1] : f;
+}
+function verFecha(f) { FECHA = f; recargar(); }
+
+// Que hay que cobrar al entregar. Es lo unico de plata que se muestra.
+function lineaCobro(p) {
+  const c = p.cobro || { prendas: 0, envio: 0, total: 0 };
+  const envio = esEnvio(p);
+
+  if (c.total > 0) {
+    const quien = envio ? 'Lo cobra Marcelo al entregar' : 'Lo cobra al retirar';
+    let det;
+    if (c.prendas > 0 && c.envio > 0) {
+      det = plata(c.prendas) + ' de las prendas + ' + plata(c.envio) +
+            ' del envío · ' + quien;
+    } else if (c.envio > 0) {
+      det = 'Las prendas ya están pagadas: esto es solo el envío · ' + quien;
+    } else {
+      det = quien;
+    }
+    return `<div class="cobro">
+      <div class="plata">Cobrar ${plata(c.total)}</div>
+      <div class="det">${det}</div></div>`;
+  }
+
+  if (envio && c.envioSinPrecio) {
+    return `<div class="cobro">
+      <div class="plata">Prendas pagadas</div>
+      <div class="det">Falta saber cuánto es el envío. Preguntale a Angie.</div></div>`;
+  }
+
+  return `<div class="cobro listo">
+    <div class="plata">Todo pagado${envio ? ', envío incluido' : ''}</div>
+    <div class="det">No hay que cobrar nada</div></div>`;
+}
+
+function tarjeta(p) {
+  const envio = esEnvio(p);
+  const hecho = p.estado === 'preparado' || p.estado === 'entregado';
+  const clase = hecho ? ' hecho' : p.prioridad ? ' pri' : '';
+  const d = p.datos || {};
+
+  return `<div class="card${clase}">
+    <div class="nom">${esc(p.cliente)}</div>
+    <div class="sub">${p.prendas.length} prenda${p.prendas.length === 1 ? '' : 's'}${
+      p.dia ? ' · vendido el ' + diaCorto(p.dia) : ''}</div>
+
+    <div class="etis">
+      <span class="eti ${envio ? 'verde' : esRetiro(p) ? 'azul' : ''}">${
+        envio ? 'Envío' : esRetiro(p) ? 'Retiro' : esc(p.entrega || 'Sin elegir')}</span>
+      ${p.prioridad ? '<span class="eti ambar">Prioridad</span>' : ''}
+      ${p.estado === 'preparado' ? '<span class="eti verde">Preparado</span>' : ''}
+      ${p.estado === 'problema' ? '<span class="eti rojo">Problema</span>' : ''}
+      ${p.estado === 'pausa' ? '<span class="eti ambar">En pausa</span>' : ''}
+    </div>
+
+    ${lineaCobro(p)}
+
+    <div class="prendas">
+      ${p.prendas.map((x, i) => {
+        const id = p.clave + '|' + x.codigo + '|' + i;
+        return `<div class="pr${TILDADAS[id] ? ' listo' : ''}" onclick="tildar('${esc(id)}',this)">
+          <div class="tick">✓</div>
+          <div class="txt">
+            <span class="cod">${esc(x.codigo)}</span>${
+              x.talle ? ` <span class="talle">talle ${esc(x.talle)}</span>` : ''}
+            <div class="desc">${esc(x.producto)}</div>
+          </div></div>`;
+      }).join('')}
+    </div>
+
+    ${envio ? `<div class="entrega">${d.direccion
+      ? `${esc(d.nombre || p.cliente)}<br>${esc(d.direccion)}${
+          d.zona ? '<br>' + esc(d.zona) : ''}${
+          d.telefono ? '<br>' + esc(d.telefono) : ''}${
+          d.franja ? '<br>' + esc(d.franja) : ''}${
+          d.notas ? '<br>' + esc(d.notas) : ''}`
+      : '<span class="falta">Todavía no está cargada la dirección.</span>'}</div>` : ''}
+
+    <div class="row">
+      <button class="btn b-verde${p.estado === 'preparado' ? ' on' : ''}"
+        onclick="estado(this,'${esc(p.cliente)}','preparado')">Preparado</button>
+      <button class="btn b-rojo${p.estado === 'problema' ? ' on' : ''}"
+        onclick="estado(this,'${esc(p.cliente)}','problema')">Problema</button>
+      <button class="btn b-ambar${p.estado === 'pausa' ? ' on' : ''}"
+        onclick="estado(this,'${esc(p.cliente)}','pausa')">En pausa</button>
+    </div>
+    ${p.estado !== 'pendiente' ? `<div class="row">
+      <button class="btn tenue ancho"
+        onclick="estado(this,'${esc(p.cliente)}','pendiente')">Deshacer, volver a sin armar</button>
+    </div>` : ''}
+  </div>`;
+}
+
+function tildar(id, el) {
+  TILDADAS[id] = !TILDADAS[id];
+  el.classList.toggle('listo', !!TILDADAS[id]);
+}
+
+// Un solo toque. Mientras guarda, el boton queda apagado y dice
+// "Guardando...", asi no se aprieta cinco veces sin saber si anduvo.
+let GUARDANDO = false;
+
+async function estado(btn, cliente, est) {
+  if (GUARDANDO) return;
+  GUARDANDO = true;
+
+  const textoOriginal = btn.textContent;
+  const claseOriginal = btn.className;
+  btn.className = 'btn espera';
+  btn.textContent = 'Guardando…';
+  // los demas botones de la misma tarjeta tambien se apagan
+  const hermanos = btn.closest('.card').querySelectorAll('.btn');
+  hermanos.forEach(b => { b.disabled = true; });
+
+  let r;
+  try {
+    r = await api('tandaPrepararEstado', { cliente: cliente, estado: est });
+  } finally {
+    GUARDANDO = false;
+  }
+
+  if (!r || !r.ok) {
+    btn.className = claseOriginal;
+    btn.textContent = textoOriginal;
+    hermanos.forEach(b => { b.disabled = false; });
+    return avisar((r && r.error) || 'No pude guardar. Probá de nuevo.', true);
+  }
+
+  avisar(est === 'pendiente'
+    ? cliente + ': vuelve a sin armar'
+    : cliente + ': ' + est);
+  await recargar();
+}
+
+async function copiarEnvios() {
+  const r = await api('tandaEnvios', { titulo: 'ENVÍOS' });
+  if (!r || !r.ok) return avisar((r && r.error) || 'No pude armarla.', true);
+  if (!r.cuantos) {
+    return avisar('Todavía no hay ninguna dirección cargada. Las carga Angie.', true);
+  }
+  try {
+    await navigator.clipboard.writeText(r.texto);
+    avisar(r.cuantos + (r.cuantos === 1 ? ' envío copiado' : ' envíos copiados'));
+  } catch (e) {
+    avisar('No pude copiar sola. Fijate el permiso del navegador.', true);
+  }
+  if (r.faltan && r.faltan.length) {
+    setTimeout(() => avisar('Sin dirección: ' + r.faltan.join(', '), true), 2900);
+  }
+}
+
+pantallaEntrar();
+</script>
+</body>
+</html>
